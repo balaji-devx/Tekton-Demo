@@ -141,7 +141,7 @@ The following diagram illustrates the architecture and separation of concerns:
 | **Minikube** | 1.39+ | Local Kubernetes cluster running on Windows 10 with Docker driver. |
 | **Kubernetes (kubectl)** | v1.36+ / v1.37+ | Container orchestrator managing Deployment, Service, PVC, RBAC, and Secrets. |
 | **Tekton Pipelines** | v1 API | Kubernetes-native CI/CD controller and CRDs executing pipeline workflows. |
-| **Kaniko** | `v1.23.2` | Daemonless in-cluster container builder compiling Dockerfiles without requiring Docker-in-Docker or host socket mounts. |
+| **Kaniko** | `v1.28.6` (martizih) | Maintained in-cluster container builder compiling Dockerfiles daemonless without host socket mounts. |
 | **PowerShell** | 5.1+ / 7.x | Automation scripts for prerequisite checks, secret setup, and deployment validation. |
 
 ---
@@ -300,12 +300,12 @@ A single `500Mi` volume (`release-console-pvc`) is provisioned using Minikube's 
    - Navigates into the workspace and executes `npm ci` followed by `npm test`.
    - Emits structured execution logs. Halts with exit code 1 if any test fails.
 3. **`build-and-push-image` (Kaniko)**:
-   - Runs `gcr.io/kaniko-project/executor:v1.23.2`.
-   - Note on Kaniko status: Although Google archived the original repository in 2025, the pinned `gcr.io/kaniko-project/executor:v1.23.2` container image remains fully available and functional for in-cluster builds without requiring Docker daemon privileges.
+   - Runs `martizih/kaniko:v1.28.6` (maintained community fork by mzihlmann/osscontainertools).
+   - Drop-in continuation of Kaniko supporting up-to-date dependencies and vulnerability patches for daemonless in-cluster builds without requiring Docker daemon privileges.
    - Mounts the `dockerhub-auth` secret at `/kaniko/.docker` to read credentials.
    - Compiles the Dockerfile using the shared workspace context and pushes `docker.io/<username>/release-console:<tag>` to Docker Hub.
 4. **`deploy-application`**:
-   - Runs `bitnami/kubectl:1.32.0`.
+   - Runs `alpine/k8s:1.37.0` (Kubernetes v1.37 compatible toolbox containing `sh`, `sed`, and `kubectl`).
    - Templates `k8s/deployment.yaml` with the exact image tag and Git commit SHA.
    - Applies the Deployment and Service manifests.
    - Executes `kubectl rollout status deployment/release-console --timeout=120s` to block until the new pod is healthy.

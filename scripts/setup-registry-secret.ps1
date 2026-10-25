@@ -29,12 +29,25 @@ if ([string]::IsNullOrWhiteSpace($Username)) {
     $Username = Read-Host "Enter Docker Hub Username"
 }
 
-if ([string]::IsNullOrWhiteSpace($Username)) {
-    Write-Error "Docker Hub Username cannot be blank."
+# Clean and sanitize username input (remove control characters and extract from command if pasted)
+if ($Username) {
+    $Username = ($Username -replace '[\x00-\x1F\x7F]', '').Trim()
+    if ($Username -match '(?i)(?:-u|--username)\s+([a-zA-Z0-9_-]+)') {
+        $Username = $Matches[1]
+    }
+}
+
+if ([string]::IsNullOrWhiteSpace($Username) -or $Username -notmatch '^[a-zA-Z0-9_-]{3,30}$') {
+    Write-Error "Invalid Docker Hub username '$Username'. A valid Docker Hub username must be 3-30 alphanumeric characters, underscores, or hyphens with no spaces."
     exit 1
 }
 
 $secureToken = Read-Host "Enter Docker Hub Access Token (input hidden)" -AsSecureString
+if (-not $secureToken) {
+    Write-Error "Access Token cannot be blank."
+    exit 1
+}
+
 $bstr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureToken)
 $plainToken = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr)
 [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
@@ -58,7 +71,8 @@ $dockerConfig = @{
     }
 } | ConvertTo-Json -Compress
 
-$tempFile = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "docker-config-[guid]::NewGuid().json")
+# Generate a valid, unique temporary file on disk using standard .NET API
+$tempFile = [System.IO.Path]::GetTempFileName()
 
 try {
     [System.IO.File]::WriteAllText($tempFile, $dockerConfig, [System.Text.Encoding]::UTF8)
@@ -72,17 +86,26 @@ try {
         --namespace="$Namespace" `
         --dry-run=client -o yaml | kubectl apply -f - 2>&1
 
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "SUCCESS: Secret 'dockerhub-auth' created/updated in namespace '$Namespace'." -ForegroundColor Green
-        Write-Host "Kaniko builds will now authenticate seamlessly to Docker Hub." -ForegroundColor Green
-    } else {
+    if ($LASTEXITCODE -ne 0) {
         Write-Error "Failed to apply Kubernetes secret: $applyResult"
+        exit 1
     }
+
+    # Verify secret exists and is valid in the cluster
+    $verifyCheck = kubectl get secret dockerhub-auth --namespace="$Namespace" -o jsonpath='{.metadata.name}' 2>&1
+    if ($LASTEXITCODE -ne 0 -or $verifyCheck -ne "dockerhub-auth") {
+        Write-Error "Kubernetes confirmed secret was not found or could not be verified: $verifyCheck"
+        exit 1
+    }
+
+    Write-Host "SUCCESS: Secret 'dockerhub-auth' created and verified in namespace '$Namespace'." -ForegroundColor Green
+    Write-Host "Configured for Docker Hub user: $Username" -ForegroundColor Green
+    Write-Host "Kaniko builds will now authenticate seamlessly to Docker Hub." -ForegroundColor Green
 
 } finally {
     # Secure cleanup of temporary file and in-memory variables
-    if (Test-Path $tempFile) {
-        Remove-Item -Path $tempFile -Force -ErrorAction SilentlyContinue
+    if ($tempFile -and (Test-Path -LiteralPath $tempFile)) {
+        Remove-Item -LiteralPath $tempFile -Force -ErrorAction SilentlyContinue
     }
     $plainToken = $null
     $pair = $null

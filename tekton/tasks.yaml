@@ -129,7 +129,7 @@ spec:
       mountPath: /kaniko/.docker
   steps:
     - name: build-and-push
-      image: gcr.io/kaniko-project/executor:v1.23.2
+      image: martizih/kaniko:v1.28.6
       args:
         - --dockerfile=$(workspaces.source.path)/$(params.subdirectory)/Dockerfile
         - --context=dir://$(workspaces.source.path)/$(params.subdirectory)
@@ -173,7 +173,7 @@ spec:
       description: Shared PersistentVolume workspace
   steps:
     - name: apply-and-verify-rollout
-      image: bitnami/kubectl:1.32.0
+      image: alpine/k8s:1.37.0
       script: |
         #!/bin/sh
         set -eu

@@ -1,0 +1,27 @@
+# Git
+.git
+.gitignore
+
+# Dependencies & Build artifacts
+node_modules
+npm-debug.log*
+
+# Test files & configurations
+test/
+coverage/
+
+# Kubernetes & Tekton manifests (not needed inside app container)
+k8s/
+tekton/
+scripts/
+
+# Documentation
+README.md
+docs/
+
+# System and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp

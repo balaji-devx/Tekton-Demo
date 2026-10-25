@@ -1,0 +1,210 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: clone-source
+  namespace: default
+  labels:
+    app: release-console
+    tier: pipeline-task
+spec:
+  description: Clones the public Git repository and outputs the commit SHA
+  params:
+    - name: url
+      type: string
+      description: The public Git repository URL
+    - name: revision
+      type: string
+      default: main
+      description: The Git revision (branch, tag, or commit SHA)
+    - name: subdirectory
+      type: string
+      default: release-console
+      description: Subdirectory in workspace to clone into
+  results:
+    - name: commit
+      description: The Git commit SHA extracted from the clone
+  workspaces:
+    - name: source
+      description: Shared PersistentVolume workspace
+  steps:
+    - name: clone-and-extract-sha
+      image: alpine/git:v2.45.2
+      script: |
+        #!/bin/sh
+        set -eu
+        TARGET_DIR="$(workspaces.source.path)/$(params.subdirectory)"
+        echo "=========================================================="
+        echo " [Task: clone-source] Cloning repository"
+        echo " URL:      $(params.url)"
+        echo " Revision: $(params.revision)"
+        echo " Target:   ${TARGET_DIR}"
+        echo "=========================================================="
+
+        if [ -d "${TARGET_DIR}" ]; then
+          echo "Cleaning previous checkout directory..."
+          rm -rf "${TARGET_DIR}"
+        fi
+
+        mkdir -p "${TARGET_DIR}"
+        git clone --branch "$(params.revision)" --depth 1 "$(params.url)" "${TARGET_DIR}"
+
+        cd "${TARGET_DIR}"
+        COMMIT_SHA=$(git rev-parse HEAD)
+        echo "Successfully checked out commit: ${COMMIT_SHA}"
+
+        # Write result to Tekton output path
+        printf "%s" "${COMMIT_SHA}" > "$(results.commit.path)"
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: test-application
+  namespace: default
+  labels:
+    app: release-console
+    tier: pipeline-task
+spec:
+  description: Installs dependencies and executes automated unit test suite
+  params:
+    - name: subdirectory
+      type: string
+      default: release-console
+      description: Subdirectory in workspace containing the project
+  workspaces:
+    - name: source
+      description: Shared PersistentVolume workspace
+  steps:
+    - name: run-unit-tests
+      image: node:20-alpine
+      script: |
+        #!/bin/sh
+        set -eu
+        APP_DIR="$(workspaces.source.path)/$(params.subdirectory)"
+        echo "=========================================================="
+        echo " [Task: test-application] Quality Gate & Automated Testing"
+        echo " Directory: ${APP_DIR}"
+        echo "=========================================================="
+
+        cd "${APP_DIR}"
+
+        echo "--- Step 1: Clean Dependency Installation (npm ci) ---"
+        npm ci
+
+        echo "--- Step 2: Running Automated Unit Tests (node:test) ---"
+        npm test
+
+        echo "=========================================================="
+        echo " [Task: test-application] ALL UNIT TESTS PASSED SUCCESSFULLY"
+        echo "=========================================================="
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: build-and-push-image
+  namespace: default
+  labels:
+    app: release-console
+    tier: pipeline-task
+spec:
+  description: Builds container image via Kaniko in-cluster and pushes to Docker Hub
+  params:
+    - name: subdirectory
+      type: string
+      default: release-console
+      description: Subdirectory in workspace containing the Dockerfile
+    - name: image-reference
+      type: string
+      description: Complete destination image reference (e.g. docker.io/user/repo:tag)
+    - name: app-version
+      type: string
+      description: Application release version injected as build arg
+    - name: git-commit
+      type: string
+      description: Git commit SHA injected as build arg
+  workspaces:
+    - name: source
+      description: Shared PersistentVolume workspace
+    - name: docker-credentials
+      description: Mounted docker config secret containing registry credentials
+      mountPath: /kaniko/.docker
+  steps:
+    - name: build-and-push
+      image: gcr.io/kaniko-project/executor:v1.23.2
+      args:
+        - --dockerfile=$(workspaces.source.path)/$(params.subdirectory)/Dockerfile
+        - --context=dir://$(workspaces.source.path)/$(params.subdirectory)
+        - --destination=$(params.image-reference)
+        - --build-arg=APP_VERSION=$(params.app-version)
+        - --build-arg=GIT_COMMIT=$(params.git-commit)
+        - --cache=false
+        - --skip-unused-stages=true
+        - --verbosity=info
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: deploy-application
+  namespace: default
+  labels:
+    app: release-console
+    tier: pipeline-task
+spec:
+  description: Deploys updated container image to Kubernetes and monitors rollout status
+  params:
+    - name: subdirectory
+      type: string
+      default: release-console
+      description: Subdirectory in workspace containing Kubernetes manifests
+    - name: image-reference
+      type: string
+      description: Container image reference to deploy
+    - name: app-version
+      type: string
+      description: Semantic release version for metadata
+    - name: git-commit
+      type: string
+      description: Git commit SHA for metadata
+    - name: namespace
+      type: string
+      default: default
+      description: Target Kubernetes namespace
+  workspaces:
+    - name: source
+      description: Shared PersistentVolume workspace
+  steps:
+    - name: apply-and-verify-rollout
+      image: bitnami/kubectl:1.32.0
+      script: |
+        #!/bin/sh
+        set -eu
+        K8S_DIR="$(workspaces.source.path)/$(params.subdirectory)/k8s"
+        echo "=========================================================="
+        echo " [Task: deploy-application] Kubernetes Deployment Rollout"
+        echo " Target Namespace: $(params.namespace)"
+        echo " Target Image:     $(params.image-reference)"
+        echo " Release Version:  $(params.app-version)"
+        echo " Git Commit:       $(params.git-commit)"
+        echo "=========================================================="
+
+        cd "${K8S_DIR}"
+
+        # Deterministically template deployment manifest with pipeline image & metadata
+        echo "Preparing deployment manifest..."
+        sed -e "s|DOCKERHUB_USERNAME/release-console:v1|$(params.image-reference)|g" \
+            -e "s|value: \"v1\"|value: \"$(params.app-version)\"|g" \
+            -e "s|value: \"commit-sha-placeholder\"|value: \"$(params.git-commit)\"|g" \
+            deployment.yaml > /tmp/deployment.yaml
+
+        echo "Applying Service definition..."
+        kubectl apply -f service.yaml -n "$(params.namespace)"
+
+        echo "Applying Deployment definition..."
+        kubectl apply -f /tmp/deployment.yaml -n "$(params.namespace)"
+
+        echo "Waiting for Deployment rollout to complete (timeout: 120s)..."
+        kubectl rollout status deployment/release-console -n "$(params.namespace)" --timeout=120s
+
+        echo "=========================================================="
+        echo " [Task: deploy-application] Rollout Completed Successfully"
+        echo "=========================================================="
+        kubectl get deployment,pods,services -l app=release-console -n "$(params.namespace)"

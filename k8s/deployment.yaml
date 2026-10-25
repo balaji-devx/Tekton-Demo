@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: release-console
+  namespace: default
+  labels:
+    app: release-console
+    tier: presentation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: release-console
+  template:
+    metadata:
+      labels:
+        app: release-console
+        tier: presentation
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: release-console
+          image: DOCKERHUB_USERNAME/release-console:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              name: http
+          env:
+            - name: PORT
+              value: "3000"
+            - name: DEPLOY_ENV
+              value: "minikube-local"
+            - name: APP_VERSION
+              value: "v1"
+            - name: GIT_COMMIT
+              value: "commit-sha-placeholder"
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 2
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false

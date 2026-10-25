@@ -1,0 +1,23 @@
+{
+  "name": "release-console",
+  "version": "1.0.0",
+  "description": "Production-grade release console web application deployed via Tekton CI/CD on Kubernetes",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test test/app.test.js"
+  },
+  "keywords": [
+    "tekton",
+    "kubernetes",
+    "docker",
+    "cicd",
+    "devops"
+  ],
+  "author": "DevOps Engineering Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

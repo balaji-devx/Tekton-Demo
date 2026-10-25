@@ -1,0 +1,91 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: release-console-pipeline
+  namespace: default
+  labels:
+    app: release-console
+    tier: cicd-pipeline
+spec:
+  description: End-to-end non-cloud CI/CD pipeline executing clone, testing, Kaniko container build, and Kubernetes deployment.
+  params:
+    - name: repo-url
+      type: string
+      description: Public Git repository URL hosting the Release Console application
+    - name: revision
+      type: string
+      default: main
+      description: Git branch, tag, or commit to build
+    - name: dockerhub-username
+      type: string
+      description: Docker Hub username for image publishing and container pull
+    - name: image-tag
+      type: string
+      default: v1
+      description: Semantic release tag for the container image (e.g. v1, v2)
+  workspaces:
+    - name: shared-workspace
+      description: Persistent storage shared across all pipeline tasks
+    - name: docker-credentials
+      description: Kubernetes secret containing Docker Hub registry authentication
+  tasks:
+    # Stage 1: Clone Git source code and capture commit SHA
+    - name: fetch-source
+      taskRef:
+        name: clone-source
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: url
+          value: $(params.repo-url)
+        - name: revision
+          value: $(params.revision)
+
+    # Stage 2: Quality Gate - Run npm ci and automated unit tests
+    - name: run-tests
+      taskRef:
+        name: test-application
+      runAfter:
+        - fetch-source
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    # Stage 3: In-cluster OCI build using Kaniko and push to Docker Hub
+    - name: build-push
+      taskRef:
+        name: build-and-push-image
+      runAfter:
+        - run-tests
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+        - name: docker-credentials
+          workspace: docker-credentials
+      params:
+        - name: image-reference
+          value: docker.io/$(params.dockerhub-username)/release-console:$(params.image-tag)
+        - name: app-version
+          value: $(params.image-tag)
+        - name: git-commit
+          value: $(tasks.fetch-source.results.commit)
+
+    # Stage 4: Kubernetes rolling update deployment and verification
+    - name: deploy
+      taskRef:
+        name: deploy-application
+      runAfter:
+        - build-push
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: image-reference
+          value: docker.io/$(params.dockerhub-username)/release-console:$(params.image-tag)
+        - name: app-version
+          value: $(params.image-tag)
+        - name: git-commit
+          value: $(tasks.fetch-source.results.commit)
+        - name: namespace
+          value: default

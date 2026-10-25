@@ -1,0 +1,29 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: release-console-run-
+  namespace: default
+  labels:
+    app: release-console
+    tier: pipeline-execution
+spec:
+  pipelineRef:
+    name: release-console-pipeline
+  taskRunTemplate:
+    serviceAccountName: release-console-pipeline-sa
+  params:
+    - name: repo-url
+      value: "https://github.com/REPLACE_WITH_GITHUB_USERNAME/REPLACE_WITH_REPO_NAME.git"
+    - name: revision
+      value: "main"
+    - name: dockerhub-username
+      value: "REPLACE_WITH_DOCKERHUB_USERNAME"
+    - name: image-tag
+      value: "v1"
+  workspaces:
+    - name: shared-workspace
+      persistentVolumeClaim:
+        claimName: release-console-pvc
+    - name: docker-credentials
+      secret:
+        secretName: dockerhub-auth

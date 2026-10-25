@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Release Console - Production telemetry and deployment verification for local Kubernetes CI/CD pipeline using Tekton and Docker.">
+  <title>Release Console — Local Kubernetes CI/CD</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="app-header">
+      <div class="header-inner">
+        <div class="brand">
+          <div class="brand-mark">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="brand-title">Release Console</h1>
+            <p class="brand-subtitle">Local Kubernetes CI/CD Pipeline Telemetry</p>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button id="btn-refresh" class="btn btn-secondary" type="button" aria-label="Refresh telemetry data">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+              <path d="M21 3v5h-5" />
+              <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+              <path d="M3 21v-5h5" />
+            </svg>
+            <span>Refresh Telemetry</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="content-container">
+      <!-- System Architecture & Context Summary -->
+      <section class="overview-section" aria-labelledby="overview-heading">
+        <div class="overview-card">
+          <div class="overview-header">
+            <h2 id="overview-heading" class="section-title">Deployment Overview</h2>
+            <div class="status-summary" id="status-summary">
+              <span class="status-dot" id="header-status-dot" aria-hidden="true"></span>
+              <span class="status-label" id="header-status-text">Connecting to pod...</span>
+            </div>
+          </div>
+          <p class="overview-copy">
+            This application is continuously deployed through an automated, non-cloud pipeline executing inside a local Minikube Kubernetes cluster. Every code update is cloned, tested, containerised with Kaniko, published to Docker Hub, and rolled out via Tekton Pipelines.
+          </p>
+        </div>
+      </section>
+
+      <!-- Primary Telemetry Grid -->
+      <section class="telemetry-section" aria-labelledby="telemetry-heading">
+        <h2 id="telemetry-heading" class="visually-hidden">Live Application Telemetry</h2>
+
+        <div class="grid grid-primary">
+          <div class="data-panel">
+            <span class="panel-caption">Application Release</span>
+            <div class="panel-value-row">
+              <span class="panel-value" id="val-version">Loading...</span>
+            </div>
+            <span class="panel-foot">Injected during build</span>
+          </div>
+
+          <div class="data-panel">
+            <span class="panel-caption">Git Commit SHA</span>
+            <div class="panel-value-row">
+              <code class="code-value" id="val-commit">Loading...</code>
+            </div>
+            <span class="panel-foot">Source repository checkout</span>
+          </div>
+
+          <div class="data-panel">
+            <span class="panel-caption">Execution Environment</span>
+            <div class="panel-value-row">
+              <span class="panel-value" id="val-env">Loading...</span>
+            </div>
+            <span class="panel-foot">Local Kubernetes / Minikube</span>
+          </div>
+
+          <div class="data-panel">
+            <span class="panel-caption">Runtime Platform</span>
+            <div class="panel-value-row">
+              <span class="panel-value" id="val-runtime">Loading...</span>
+            </div>
+            <span class="panel-foot">Alpine Node.js 20 base</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Two-column Section: Pipeline Workflow & Raw Telemetry Inspector -->
+      <section class="details-section" aria-labelledby="details-heading">
+        <h2 id="details-heading" class="visually-hidden">Pipeline Architecture and Live Verification</h2>
+
+        <div class="grid grid-split">
+          <!-- Pipeline Stages Column -->
+          <div class="panel-block">
+            <div class="panel-block-header">
+              <h3 class="panel-block-title">Tekton Pipeline Stages</h3>
+              <span class="panel-block-sub">Sequential execution workflow</span>
+            </div>
+
+            <ol class="stage-list">
+              <li class="stage-item">
+                <div class="stage-index">1</div>
+                <div class="stage-details">
+                  <div class="stage-title">Clone Source</div>
+                  <div class="stage-desc">Retrieves the repository from GitHub into a shared PersistentVolume Workspace and outputs the verified commit SHA.</div>
+                  <div class="stage-tech">Task: clone-source &bull; alpine/git</div>
+                </div>
+              </li>
+
+              <li class="stage-item">
+                <div class="stage-index">2</div>
+                <div class="stage-details">
+                  <div class="stage-title">Install &amp; Test Quality Gate</div>
+                  <div class="stage-desc">Executes clean npm ci and unit tests with node:test. Failure halts the pipeline immediately before building.</div>
+                  <div class="stage-tech">Task: test-application &bull; node:20-alpine</div>
+                </div>
+              </li>
+
+              <li class="stage-item">
+                <div class="stage-index">3</div>
+                <div class="stage-details">
+                  <div class="stage-title">In-Cluster Image Build</div>
+                  <div class="stage-desc">Builds the production Docker image inside the Kubernetes pod using Kaniko and pushes versioned tags to Docker Hub.</div>
+                  <div class="stage-tech">Task: build-and-push-image &bull; Kaniko Executor</div>
+                </div>
+              </li>
+
+              <li class="stage-item">
+                <div class="stage-index">4</div>
+                <div class="stage-details">
+                  <div class="stage-title">Rolling Kubernetes Deployment</div>
+                  <div class="stage-desc">Updates deployment manifests with the verified container image, monitors rollout status, and confirms endpoint readiness.</div>
+                  <div class="stage-tech">Task: deploy-application &bull; kubectl 1.32</div>
+                </div>
+              </li>
+            </ol>
+          </div>
+
+          <!-- Raw Diagnostic Inspector Column -->
+          <div class="panel-block">
+            <div class="panel-block-header">
+              <h3 class="panel-block-title">Live Endpoint Inspector</h3>
+              <span class="panel-block-sub">Direct HTTP probe response</span>
+            </div>
+
+            <div class="inspector-controls">
+              <div class="endpoint-tabs" role="tablist" aria-label="Select diagnostic endpoint">
+                <button class="tab-btn active" id="tab-info" role="tab" aria-selected="true" type="button">GET /api/info</button>
+                <button class="tab-btn" id="tab-health" role="tab" aria-selected="false" type="button">GET /healthz</button>
+              </div>
+              <div class="latency-counter" id="telemetry-latency">
+                Latency: <span id="val-latency">--</span> ms
+              </div>
+            </div>
+
+            <div class="terminal-view">
+              <div class="terminal-meta">
+                <span class="terminal-status" id="terminal-http-status">HTTP 200 OK</span>
+                <span class="terminal-time" id="terminal-timestamp">--:--:--</span>
+              </div>
+              <pre class="terminal-output" id="terminal-content">Awaiting backend response...</pre>
+            </div>
+
+            <div class="inspector-notes">
+              Health check requests are probed periodically by the Kubernetes kubelet via HTTP probes and displayed here directly from the server.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- College Presentation Architecture Context -->
+      <section class="footer-context" aria-labelledby="context-heading">
+        <h2 id="context-heading" class="visually-hidden">System Context</h2>
+        <div class="context-grid">
+          <div class="context-item">
+            <div class="context-title">Local Execution</div>
+            <div class="context-body">All build and deploy operations execute entirely within the local Minikube cluster on Windows 10 without requiring cloud compute resources.</div>
+          </div>
+          <div class="context-item">
+            <div class="context-title">External Registries</div>
+            <div class="context-body">GitHub serves as external VCS and Docker Hub serves as the external OCI container registry, authenticated through Kubernetes Secrets.</div>
+          </div>
+          <div class="context-item">
+            <div class="context-title">Automated Gating</div>
+            <div class="context-body">PipelineRun sequential dependencies guarantee that any failing unit test halts container builds, preventing defective deployments.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <div class="footer-inner">
+        <span>Design and Implementation of a Non-Cloud CI/CD Pipeline Using Tekton, Docker and Kubernetes</span>
+        <span>Node.js &bull; Docker &bull; Minikube &bull; Tekton</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

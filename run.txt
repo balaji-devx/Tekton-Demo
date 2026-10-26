@@ -1,0 +1,16 @@
+cd "E:\SEM 3\DEVOPS\Tekton-Demo"
+
+minikube start
+kubectl config use-context minikube
+
+kubectl wait --for=condition=Ready node/minikube --timeout=120s
+
+kubectl get pods -n tekton-pipelines
+kubectl rollout status deployment/release-console --timeout=180s
+kubectl get pods,services
+
+
+kubectl port-forward svc/release-console-service 3000:3000 -n default
+
+kubectl get pipelineruns
+kubectl get taskruns

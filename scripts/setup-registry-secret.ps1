@@ -62,7 +62,7 @@ $pair = "${Username}:${plainToken}"
 $bytes = [System.Text.Encoding]::UTF8.GetBytes($pair)
 $base64Auth = [Convert]::ToBase64String($bytes)
 
-# Create standard Docker config JSON
+# Generate standard Docker config JSON
 $dockerConfig = @{
     auths = @{
         "https://index.docker.io/v1/" = @{
@@ -71,36 +71,49 @@ $dockerConfig = @{
     }
 } | ConvertTo-Json -Compress
 
-# Generate a valid, unique temporary file on disk using standard .NET API
+# Generate a valid, unique temporary file on disk
 $tempFile = [System.IO.Path]::GetTempFileName()
 
 try {
-    [System.IO.File]::WriteAllText($tempFile, $dockerConfig, [System.Text.Encoding]::UTF8)
+    # CRITICAL: Write strictly UTF-8 WITHOUT Byte Order Mark (BOM)
+    # Kaniko's Go json parser rejects the 0xEF, 0xBB, 0xBF BOM with:
+    # "invalid character 'ï' looking for beginning of value"
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    $dockerConfigBytes = $utf8NoBom.GetBytes($dockerConfig)
+    [System.IO.File]::WriteAllBytes($tempFile, $dockerConfigBytes)
 
-    Write-Host "`nApplying Kubernetes Secret 'dockerhub-auth' in namespace '$Namespace'..." -ForegroundColor Cyan
-    
-    # Create secret with both config.json (for Kaniko) and .dockerconfigjson (standard k8s)
-    $applyResult = kubectl create secret generic dockerhub-auth `
-        --from-file=config.json="$tempFile" `
-        --from-file=.dockerconfigjson="$tempFile" `
-        --namespace="$Namespace" `
-        --dry-run=client -o yaml | kubectl apply -f - 2>&1
-
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Failed to apply Kubernetes secret: $applyResult"
+    # Sanity check: Ensure file starts with '{' (0x7B) and strictly NO BOM (0xEF, 0xBB, 0xBF)
+    $headerBytes = [System.IO.File]::ReadAllBytes($tempFile)
+    if ($headerBytes.Length -lt 2 -or $headerBytes[0] -ne 0x7B) {
+        Write-Error "Encoding check failed: Temporary file contains BOM or does not begin with '{' (0x7B)."
         exit 1
     }
 
-    # Verify secret exists and is valid in the cluster
-    $verifyCheck = kubectl get secret dockerhub-auth --namespace="$Namespace" -o jsonpath='{.metadata.name}' 2>&1
-    if ($LASTEXITCODE -ne 0 -or $verifyCheck -ne "dockerhub-auth") {
-        Write-Error "Kubernetes confirmed secret was not found or could not be verified: $verifyCheck"
+    Write-Host "`nUpdating Kubernetes Secret 'dockerhub-auth' in namespace '$Namespace'..." -ForegroundColor Cyan
+
+    # Remove previous Secret to purge any obsolete keys (e.g., .dockerconfigjson)
+    $null = kubectl delete secret dockerhub-auth --namespace="$Namespace" --ignore-not-found 2>&1
+
+    # Create clean Secret containing exclusively the config.json key for Kaniko (/kaniko/.docker/config.json)
+    $applyResult = kubectl create secret generic dockerhub-auth `
+        --from-file=config.json="$tempFile" `
+        --namespace="$Namespace" 2>&1
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Failed to create Kubernetes secret 'dockerhub-auth': $applyResult"
+        exit 1
+    }
+
+    # Verify secret exists and contains exclusively the config.json key
+    $secretKeys = kubectl get secret dockerhub-auth --namespace="$Namespace" -o jsonpath='{.data}' 2>&1
+    if ($LASTEXITCODE -ne 0 -or $secretKeys -notmatch 'config\.json') {
+        Write-Error "Kubernetes secret verification failed: Secret does not contain expected config.json key: $secretKeys"
         exit 1
     }
 
     Write-Host "SUCCESS: Secret 'dockerhub-auth' created and verified in namespace '$Namespace'." -ForegroundColor Green
     Write-Host "Configured for Docker Hub user: $Username" -ForegroundColor Green
-    Write-Host "Kaniko builds will now authenticate seamlessly to Docker Hub." -ForegroundColor Green
+    Write-Host "Secret contains UTF-8 (No BOM) config.json ready for Kaniko." -ForegroundColor Green
 
 } finally {
     # Secure cleanup of temporary file and in-memory variables

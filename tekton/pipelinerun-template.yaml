@@ -1,4 +1,4 @@
-apiVersion: tekton.dev/v1
+﻿apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
   generateName: release-console-run-
@@ -13,13 +13,17 @@ spec:
     serviceAccountName: release-console-pipeline-sa
   params:
     - name: repo-url
-      value: "https://github.com/REPLACE_WITH_GITHUB_USERNAME/REPLACE_WITH_REPO_NAME.git"
+      value: "https://github.com/balaji-devx/Tekton-Demo.git"
     - name: revision
       value: "main"
     - name: dockerhub-username
-      value: "REPLACE_WITH_DOCKERHUB_USERNAME"
+      value: "ba1aj1"
     - name: image-tag
-      value: "v1"
+      value: "v3"
+    - name: app-version
+      value: "v3"
+    - name: git-commit
+      value: "ff38a12b6277ffafd83d1d9d824c781f60be390c"
   workspaces:
     - name: shared-workspace
       persistentVolumeClaim:
@@ -27,3 +31,5 @@ spec:
     - name: docker-credentials
       secret:
         secretName: dockerhub-auth
+
+

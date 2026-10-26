@@ -19,11 +19,11 @@ spec:
     - name: dockerhub-username
       value: "ba1aj1"
     - name: image-tag
-      value: "v3"
+      value: "v1"
     - name: app-version
-      value: "v3"
+      value: "v1"
     - name: git-commit
-      value: "ff38a12b6277ffafd83d1d9d824c781f60be390c"
+      value: "8c0060778800a6f62d2b216efab9d6be74375ecb"
   workspaces:
     - name: shared-workspace
       persistentVolumeClaim:
@@ -31,5 +31,6 @@ spec:
     - name: docker-credentials
       secret:
         secretName: dockerhub-auth
+
 
 

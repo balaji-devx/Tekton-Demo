@@ -57,6 +57,103 @@ function sendJson(res, statusCode, data) {
 }
 
 /**
+ * Evaluates a release scenario for the UI's educational resilience lab.
+ * This endpoint never invokes kubectl and never changes the live deployment.
+ */
+const RELEASE_LAB_SCENARIOS = Object.freeze({
+  success: {
+    outcome: 'ready',
+    title: 'Quality gates passed',
+    summary: 'The candidate is eligible to proceed to deployment. This simulation does not deploy it.',
+    priorVersionPreserved: false,
+    stages: [
+      { name: 'Unit tests', status: 'passed', detail: 'Automated tests passed.' },
+      { name: 'Build and publish image', status: 'passed', detail: 'Kaniko would publish the versioned image.' },
+      { name: 'Kubernetes rollout', status: 'ready', detail: 'The candidate is ready for the deployment stage.' }
+    ]
+  },
+  'test-failure': {
+    outcome: 'blocked',
+    title: 'Candidate blocked at the test gate',
+    summary: 'The test Task fails, so the dependent image-build and deployment Tasks do not run. The currently deployed version remains in place.',
+    priorVersionPreserved: true,
+    stages: [
+      { name: 'Unit tests', status: 'failed', detail: 'A regression was detected by the test suite.' },
+      { name: 'Build and publish image', status: 'blocked', detail: 'Blocked because the test Task failed.' },
+      { name: 'Kubernetes rollout', status: 'skipped', detail: 'No new image is deployed; the existing Deployment is untouched.' }
+    ]
+  },
+  'rollout-failure': {
+    outcome: 'recovered',
+    title: 'Failed rollout — previous revision restored',
+    summary: 'If a real rollout fails and a previous Deployment revision exists, the deploy Task attempts kubectl rollout undo and verifies the restored revision. The pipeline still reports failure.',
+    priorVersionPreserved: true,
+    stages: [
+      { name: 'Unit tests', status: 'passed', detail: 'The candidate passed the test gate.' },
+      { name: 'Build and publish image', status: 'passed', detail: 'The candidate image was published.' },
+      { name: 'Kubernetes rollout', status: 'failed', detail: 'The candidate did not become ready before the rollout timeout.' },
+      { name: 'Rollback', status: 'restored', detail: 'The prior Deployment revision is restored when rollback succeeds.' }
+    ]
+  }
+});
+
+function handleReleaseLabRequest(req, res) {
+  const chunks = [];
+  const maxBodyBytes = 8192;
+  let bodyBytes = 0;
+  let tooLarge = false;
+
+  req.on('data', (chunk) => {
+    bodyBytes += chunk.length;
+    if (bodyBytes > maxBodyBytes) {
+      tooLarge = true;
+      return;
+    }
+    chunks.push(chunk);
+  });
+
+  req.on('end', () => {
+    if (tooLarge) {
+      return sendJson(res, 413, { error: 'Request body too large', code: 413 });
+    }
+
+    let payload;
+    try {
+      payload = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}');
+    } catch (_) {
+      return sendJson(res, 400, { error: 'Invalid JSON body', code: 400 });
+    }
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+      return sendJson(res, 400, { error: 'JSON body must be an object', code: 400 });
+    }
+
+    const scenario = Object.hasOwn(RELEASE_LAB_SCENARIOS, payload.scenario)
+      ? RELEASE_LAB_SCENARIOS[payload.scenario]
+      : null;
+    if (!scenario) {
+      return sendJson(res, 400, {
+        error: 'Unknown scenario. Use success, test-failure, or rollout-failure.',
+        code: 400
+      });
+    }
+
+    return sendJson(res, 200, {
+      service: 'release-console',
+      simulationOnly: true,
+      liveClusterChanged: false,
+      scenario: payload.scenario,
+      currentVersion: process.env.APP_VERSION || 'dev-local',
+      currentCommit: process.env.GIT_COMMIT || 'local-dev-commit',
+      priorVersionPreserved: scenario.priorVersionPreserved,
+      outcome: scenario.outcome,
+      title: scenario.title,
+      summary: scenario.summary,
+      stages: scenario.stages
+    });
+  });
+}
+
+/**
  * Handles incoming HTTP requests for Release Console.
  * @param {http.IncomingMessage} req 
  * @param {http.ServerResponse} res 
@@ -66,7 +163,20 @@ function requestHandler(req, res) {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     const pathname = url.pathname;
 
-    // Only GET and HEAD methods are supported
+    // Interactive what-if evaluator; deliberately separate from live cluster control.
+    if (pathname === '/api/release-lab/evaluate') {
+      if (req.method !== 'POST') {
+        res.writeHead(405, {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Allow': 'POST',
+          'X-Content-Type-Options': 'nosniff'
+        });
+        return res.end(JSON.stringify({ error: 'Method Not Allowed', code: 405 }));
+      }
+      return handleReleaseLabRequest(req, res);
+    }
+
+    // Ordinary application routes are read-only and accept GET/HEAD only.
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       res.writeHead(405, { 'Content-Type': 'application/json; charset=utf-8', 'Allow': 'GET, HEAD' });
       return res.end(JSON.stringify({ error: 'Method Not Allowed', code: 405 }));

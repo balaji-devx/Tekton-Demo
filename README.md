@@ -6,10 +6,10 @@
 **Project Application:** Release Console  
 **Domain:** DevOps, Cloud-Native Engineering, Container Orchestration  
 
-The primary objective of this project is to design, implement, and demonstrate a completely functional, local Kubernetes-native Continuous Integration and Continuous Deployment (CI/CD) pipeline running on **Minikube** without reliance on managed cloud infrastructure (e.g., AWS, GCP, Azure). 
+The primary objective of this project is to design, implement, and demonstrate a local Kubernetes-native Continuous Integration and Continuous Deployment (CI/CD) pipeline running on **Minikube** without relying on managed cloud compute infrastructure (e.g., AWS, GCP, Azure). GitHub and Docker Hub remain external hosted services. The current pipeline is started manually; GitHub push webhooks are not configured.
 
 Using **Tekton Pipelines**, **Docker**, and **Kubernetes**, this project automates the entire software delivery lifecycle:
-1. Cloning source code directly from a public Git repository upon developer commit.
+1. Cloning source code from a public Git repository after a manually triggered PipelineRun (GitHub push webhooks are not configured in this implementation).
 2. Executing automated unit test suites within containerised quality gates.
 3. Building a container image in-cluster using the daemonless **Kaniko** container builder.
 4. Publishing the versioned image to **Docker Hub**.
@@ -437,27 +437,16 @@ This demonstration proves to evaluators that tests genuinely guard against bad r
 ### Step 1: Run Successful Release (`v1`)
 Run the pipeline with the clean code and tag `v1`. Confirm that all 4 tasks pass, and `verify-deployment.ps1` shows version `v1` running.
 
-### Step 2: Introduce an Intentional Test Failure
-In `test/app.test.js`, edit line 70 to make an assertion deliberately fail:
-```javascript
-// Change:
-assert.equal(res.statusCode, 200);
-// To:
-assert.equal(res.statusCode, 500); // Intentionally broken test
-```
+### Step 2: Trigger a Controlled Failing Test
+The patch adds a `-DemoFailTests` switch that sets `DEMO_FORCE_TEST_FAILURE=true` only inside the test Task. The normal test suite remains unchanged when the flag is off. This injects one explicit, deliberate failure so the quality gate can be demonstrated without committing broken application code.
 
-### Step 3: Push the Broken Test
-```powershell
-git commit -am "test: introduce intentional failing test for gate demonstration"
-git push origin main
-```
-
-### Step 4: Run Pipeline with Tag `v2`
+### Step 3: Run Pipeline with a failure-demo tag
 ```powershell
 .\scripts\run-pipeline.ps1 `
   -RepoUrl "https://github.com/YOUR_GITHUB_USERNAME/Tekton-Demo.git" `
   -DockerHubUsername "YOUR_DOCKERHUB_USERNAME" `
-  -ImageTag "v2"
+  -ImageTag "v2-fail-demo" `
+  -DemoFailTests
 ```
 
 ### Step 5: Observe Quality Gate Halting
@@ -527,7 +516,33 @@ kubectl delete secret dockerhub-auth --ignore-not-found
 
 ---
 
-## 24. Official Technical References
+## 24. Interactive Release Resilience Lab and Controlled Failure Demo
+
+The Release Console UI now includes a **Release Resilience Lab** with three clearly labelled what-if scenarios: a healthy candidate, a test failure, and a rollout failure. The evaluator endpoint (`POST /api/release-lab/evaluate`) is a simulation only; it does not run `kubectl` or change the live cluster. The running version shown in the lab is read from the application environment.
+
+For a real pipeline failure-gate demonstration, first commit and push this patch so the pipeline can clone the new files, then run:
+
+```powershell
+.\scripts\run-pipeline.ps1 `
+  -RepoUrl "https://github.com/balaji-devx/Tekton-Demo.git" `
+  -DockerHubUsername "ba1aj1" `
+  -ImageTag "v2-fail-demo" `
+  -DemoFailTests
+```
+
+The test Task fails intentionally, so the image-building and deployment Tasks are not executed. The already-running Deployment remains unchanged. Capture its current image before and after the failure with:
+
+```powershell
+kubectl get deployment release-console -o jsonpath='{.spec.template.spec.containers[0].image}'
+```
+
+Then run a normal release with a **new, unused image tag**, for example `v3`, by omitting `-DemoFailTests`. If a real Deployment rollout fails after the image is built, `deploy-application` attempts `kubectl rollout undo` when a previous Deployment revision exists. The PipelineRun remains failed even if rollback succeeds, making the failure visible rather than reporting a false success.
+
+The rollout-undo path requires the pipeline ServiceAccount's least-privilege Role to read ReplicaSets and patch the Deployment. A first-ever deployment has no previous revision to restore.
+
+---
+
+## 25. Official Technical References
 
 - [Tekton Pipelines Documentation](https://tekton.dev/docs/pipelines/)
 - [Kubernetes Documentation: Deployments](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/)

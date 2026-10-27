@@ -70,12 +70,19 @@ spec:
       type: string
       default: release-console
       description: Subdirectory in workspace containing the project
+    - name: demo-fail-tests
+      type: string
+      default: "false"
+      description: Enable a deliberate failing test for the failure-gate demonstration only
   workspaces:
     - name: source
       description: Shared PersistentVolume workspace
   steps:
     - name: run-unit-tests
       image: node:20-alpine
+      env:
+        - name: DEMO_FORCE_TEST_FAILURE
+          value: "$(params.demo-fail-tests)"
       script: |
         #!/bin/sh
         set -eu
@@ -188,6 +195,17 @@ spec:
 
         cd "${K8S_DIR}"
 
+        # Record whether a prior release exists before changing the Deployment.
+        PREVIOUS_DEPLOYMENT="false"
+        PREVIOUS_IMAGE=""
+        if kubectl get deployment release-console -n "$(params.namespace)" >/dev/null 2>&1; then
+          PREVIOUS_DEPLOYMENT="true"
+          PREVIOUS_IMAGE="$(kubectl get deployment release-console -n "$(params.namespace)" -o jsonpath='{.spec.template.spec.containers[?(@.name=="release-console")].image}' 2>/dev/null || true)"
+          echo "Previous deployment detected; previous image: ${PREVIOUS_IMAGE}"
+        else
+          echo "No previous deployment exists; rollback will not be possible on a first install."
+        fi
+
         # Deterministically template deployment manifest with pipeline image & metadata
         echo "Preparing deployment manifest..."
         sed -e "s|DOCKERHUB_USERNAME/release-console:v1|$(params.image-reference)|g" \
@@ -202,9 +220,26 @@ spec:
         kubectl apply -f /tmp/deployment.yaml -n "$(params.namespace)"
 
         echo "Waiting for Deployment rollout to complete (timeout: 120s)..."
-        kubectl rollout status deployment/release-console -n "$(params.namespace)" --timeout=120s
-
-        echo "=========================================================="
-        echo " [Task: deploy-application] Rollout Completed Successfully"
-        echo "=========================================================="
+        if kubectl rollout status deployment/release-console -n "$(params.namespace)" --timeout=120s; then
+          echo "=========================================================="
+          echo " [Task: deploy-application] Rollout Completed Successfully"
+          echo "=========================================================="
+        else
+          echo "ERROR: Candidate rollout failed. The Task will attempt to restore the previous revision."
+          if [ "${PREVIOUS_DEPLOYMENT}" = "true" ] && [ -n "${PREVIOUS_IMAGE}" ]; then
+            if kubectl rollout undo deployment/release-console -n "$(params.namespace)"; then
+              if kubectl rollout status deployment/release-console -n "$(params.namespace)" --timeout=120s; then
+                echo "ROLLBACK VERIFIED: previous Deployment revision is available again."
+              else
+                echo "ERROR: Rollback was requested, but its rollout did not become ready."
+              fi
+            else
+              echo "ERROR: Kubernetes could not roll back to the previous Deployment revision."
+            fi
+          else
+            echo "No prior Deployment revision is available to restore."
+          fi
+          # Keep the PipelineRun failed so an unsuccessful release is never reported as green.
+          exit 1
+        fi
         kubectl get deployment,pods,services -l app=release-console -n "$(params.namespace)"

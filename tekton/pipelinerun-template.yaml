@@ -20,10 +20,8 @@ spec:
       value: "ba1aj1"
     - name: image-tag
       value: "v1"
-    - name: app-version
-      value: "v1"
-    - name: git-commit
-      value: "a15b0f890494498aa4d36451c6d437fe3bee6b17"
+    - name: demo-fail-tests
+      value: "false"
   workspaces:
     - name: shared-workspace
       persistentVolumeClaim:

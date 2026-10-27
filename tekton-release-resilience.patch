@@ -1,0 +1,814 @@
+diff --git a/README.md b/README.md
+index 37b5adf..75082ac 100644
+--- a/README.md
++++ b/README.md
+@@ -6,10 +6,10 @@
+ **Project Application:** Release Console  
+ **Domain:** DevOps, Cloud-Native Engineering, Container Orchestration  
+ 
+-The primary objective of this project is to design, implement, and demonstrate a completely functional, local Kubernetes-native Continuous Integration and Continuous Deployment (CI/CD) pipeline running on **Minikube** without reliance on managed cloud infrastructure (e.g., AWS, GCP, Azure). 
++The primary objective of this project is to design, implement, and demonstrate a local Kubernetes-native Continuous Integration and Continuous Deployment (CI/CD) pipeline running on **Minikube** without relying on managed cloud compute infrastructure (e.g., AWS, GCP, Azure). GitHub and Docker Hub remain external hosted services. The current pipeline is started manually; GitHub push webhooks are not configured.
+ 
+ Using **Tekton Pipelines**, **Docker**, and **Kubernetes**, this project automates the entire software delivery lifecycle:
+-1. Cloning source code directly from a public Git repository upon developer commit.
++1. Cloning source code from a public Git repository after a manually triggered PipelineRun (GitHub push webhooks are not configured in this implementation).
+ 2. Executing automated unit test suites within containerised quality gates.
+ 3. Building a container image in-cluster using the daemonless **Kaniko** container builder.
+ 4. Publishing the versioned image to **Docker Hub**.
+@@ -437,27 +437,16 @@ This demonstration proves to evaluators that tests genuinely guard against bad r
+ ### Step 1: Run Successful Release (`v1`)
+ Run the pipeline with the clean code and tag `v1`. Confirm that all 4 tasks pass, and `verify-deployment.ps1` shows version `v1` running.
+ 
+-### Step 2: Introduce an Intentional Test Failure
+-In `test/app.test.js`, edit line 70 to make an assertion deliberately fail:
+-```javascript
+-// Change:
+-assert.equal(res.statusCode, 200);
+-// To:
+-assert.equal(res.statusCode, 500); // Intentionally broken test
+-```
+-
+-### Step 3: Push the Broken Test
+-```powershell
+-git commit -am "test: introduce intentional failing test for gate demonstration"
+-git push origin main
+-```
++### Step 2: Trigger a Controlled Failing Test
++The patch adds a `-DemoFailTests` switch that sets `DEMO_FORCE_TEST_FAILURE=true` only inside the test Task. The normal test suite remains unchanged when the flag is off. This injects one explicit, deliberate failure so the quality gate can be demonstrated without committing broken application code.
+ 
+-### Step 4: Run Pipeline with Tag `v2`
++### Step 3: Run Pipeline with a failure-demo tag
+ ```powershell
+ .\scripts\run-pipeline.ps1 `
+   -RepoUrl "https://github.com/YOUR_GITHUB_USERNAME/Tekton-Demo.git" `
+   -DockerHubUsername "YOUR_DOCKERHUB_USERNAME" `
+-  -ImageTag "v2"
++  -ImageTag "v2-fail-demo" `
++  -DemoFailTests
+ ```
+ 
+ ### Step 5: Observe Quality Gate Halting
+@@ -527,7 +516,33 @@ kubectl delete secret dockerhub-auth --ignore-not-found
+ 
+ ---
+ 
+-## 24. Official Technical References
++## 24. Interactive Release Resilience Lab and Controlled Failure Demo
++
++The Release Console UI now includes a **Release Resilience Lab** with three clearly labelled what-if scenarios: a healthy candidate, a test failure, and a rollout failure. The evaluator endpoint (`POST /api/release-lab/evaluate`) is a simulation only; it does not run `kubectl` or change the live cluster. The running version shown in the lab is read from the application environment.
++
++For a real pipeline failure-gate demonstration, first commit and push this patch so the pipeline can clone the new files, then run:
++
++```powershell
++.\scripts\run-pipeline.ps1 `
++  -RepoUrl "https://github.com/balaji-devx/Tekton-Demo.git" `
++  -DockerHubUsername "ba1aj1" `
++  -ImageTag "v2-fail-demo" `
++  -DemoFailTests
++```
++
++The test Task fails intentionally, so the image-building and deployment Tasks are not executed. The already-running Deployment remains unchanged. Capture its current image before and after the failure with:
++
++```powershell
++kubectl get deployment release-console -o jsonpath='{.spec.template.spec.containers[0].image}'
++```
++
++Then run a normal release with a **new, unused image tag**, for example `v3`, by omitting `-DemoFailTests`. If a real Deployment rollout fails after the image is built, `deploy-application` attempts `kubectl rollout undo` when a previous Deployment revision exists. The PipelineRun remains failed even if rollback succeeds, making the failure visible rather than reporting a false success.
++
++The rollout-undo path requires the pipeline ServiceAccount's least-privilege Role to read ReplicaSets and patch the Deployment. A first-ever deployment has no previous revision to restore.
++
++---
++
++## 25. Official Technical References
+ 
+ - [Tekton Pipelines Documentation](https://tekton.dev/docs/pipelines/)
+ - [Kubernetes Documentation: Deployments](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/)
+diff --git a/public/app.js b/public/app.js
+index 2521bb4..87a928e 100644
+--- a/public/app.js
++++ b/public/app.js
+@@ -24,6 +24,13 @@
+   const btnRefresh = document.getElementById('btn-refresh');
+   const tabInfo = document.getElementById('tab-info');
+   const tabHealth = document.getElementById('tab-health');
++  const labScenarioButtons = Array.from(document.querySelectorAll('[data-scenario]'));
++  const labOutcomePanel = document.getElementById('lab-outcome-panel');
++  const labOutcomeTitle = document.getElementById('lab-outcome-title');
++  const labOutcomeSummary = document.getElementById('lab-outcome-summary');
++  const labCurrentVersion = document.getElementById('lab-current-version');
++  const labStageResults = document.getElementById('lab-stage-results');
++  const labEvidence = document.getElementById('lab-evidence');
+ 
+   function updateStatus(state, label) {
+     elHeaderDot.className = 'status-dot';
+@@ -70,6 +77,7 @@
+ 
+       // Render primary telemetry
+       elVersion.textContent = cachedInfo.version || 'Unknown';
++      labCurrentVersion.textContent = cachedInfo.version || 'Unknown';
+       
+       const commitSha = cachedInfo.commit || 'unknown';
+       elCommit.textContent = commitSha.length > 7 ? commitSha.substring(0, 7) : commitSha;
+@@ -122,6 +130,68 @@
+     fetchTelemetry();
+   });
+ 
++  function renderLabResult(result) {
++    labOutcomePanel.dataset.outcome = result.outcome;
++    labOutcomeTitle.textContent = result.title;
++    labOutcomeSummary.textContent = result.summary;
++    labCurrentVersion.textContent = result.currentVersion || 'Unknown';
++    labStageResults.replaceChildren();
++
++    result.stages.forEach(function (stage) {
++      const item = document.createElement('li');
++      item.className = 'lab-stage-item';
++
++      const status = document.createElement('span');
++      status.className = `lab-stage-status status-${stage.status}`;
++      status.textContent = stage.status.replace(/-/g, ' ').toUpperCase();
++
++      const content = document.createElement('div');
++      content.className = 'lab-stage-copy';
++      const title = document.createElement('strong');
++      title.textContent = stage.name;
++      const detail = document.createElement('p');
++      detail.textContent = stage.detail;
++      content.append(title, detail);
++      item.append(status, content);
++      labStageResults.append(item);
++    });
++
++    labEvidence.textContent = JSON.stringify(result, null, 2);
++  }
++
++  async function evaluateReleaseScenario(button) {
++    labScenarioButtons.forEach(function (candidate) { candidate.disabled = true; });
++    labOutcomeTitle.textContent = 'Evaluating scenario...';
++    labOutcomeSummary.textContent = 'The local evaluator is calculating the expected pipeline outcome.';
++    labOutcomePanel.dataset.outcome = 'pending';
++
++    try {
++      const response = await fetch('/api/release-lab/evaluate', {
++        method: 'POST',
++        headers: { 'Content-Type': 'application/json' },
++        body: JSON.stringify({ scenario: button.dataset.scenario }),
++        cache: 'no-store'
++      });
++      const result = await response.json();
++      if (!response.ok) {
++        throw new Error(result.error || `HTTP ${response.status}`);
++      }
++      renderLabResult(result);
++    } catch (error) {
++      labOutcomePanel.dataset.outcome = 'error';
++      labOutcomeTitle.textContent = 'Scenario evaluator unavailable';
++      labOutcomeSummary.textContent = error.message;
++      labStageResults.replaceChildren();
++      labEvidence.textContent = String(error.message);
++    } finally {
++      labScenarioButtons.forEach(function (candidate) { candidate.disabled = false; });
++    }
++  }
++
++  labScenarioButtons.forEach(function (button) {
++    button.addEventListener('click', function () { evaluateReleaseScenario(button); });
++  });
++
+   // Initial fetch and 15-second polling interval
+   fetchTelemetry();
+   setInterval(fetchTelemetry, 15000);
+diff --git a/public/index.html b/public/index.html
+index c1b1f30..fbaa2d1 100644
+--- a/public/index.html
++++ b/public/index.html
+@@ -49,7 +49,7 @@
+             </div>
+           </div>
+           <p class="overview-copy">
+-            This application is continuously deployed through an automated, non-cloud pipeline executing inside a local Minikube Kubernetes cluster. Every code update is cloned, tested, containerised with Kaniko, published to Docker Hub, and rolled out via Tekton Pipelines.
++            This application is released through a non-cloud CI/CD pipeline on a local Minikube Kubernetes cluster. After a PipelineRun is manually triggered, Tekton clones and tests the source, Kaniko builds and publishes the image, and the deployment Task updates Kubernetes.
+           </p>
+         </div>
+       </section>
+@@ -93,6 +93,47 @@
+         </div>
+       </section>
+ 
++      <!-- Interactive what-if scenarios: these evaluate policy and never mutate Minikube. -->
++      <section class="lab-section" aria-labelledby="lab-heading">
++        <div class="lab-heading-row">
++          <div>
++            <h2 class="section-title" id="lab-heading">Release Resilience Lab</h2>
++            <p class="lab-subtitle">Explore how the pipeline should behave when a release passes or fails.</p>
++          </div>
++          <span class="lab-mode-label">WHAT-IF SIMULATION</span>
++        </div>
++
++        <div class="lab-scenarios" role="group" aria-label="Select release scenario">
++          <button class="lab-scenario-btn" type="button" data-scenario="success">Healthy candidate</button>
++          <button class="lab-scenario-btn" type="button" data-scenario="test-failure">Test failure</button>
++          <button class="lab-scenario-btn" type="button" data-scenario="rollout-failure">Rollout failure</button>
++        </div>
++
++        <div class="lab-result-grid">
++          <section class="lab-result-card lab-outcome-panel" id="lab-outcome-panel" data-outcome="idle" aria-live="polite">
++            <p class="lab-card-eyebrow">Expected pipeline decision</p>
++            <h3 id="lab-outcome-title">Choose a scenario</h3>
++            <p id="lab-outcome-summary" class="lab-outcome-summary">Run a what-if scenario to see the quality gate, deployment decision, and release protection behavior.</p>
++            <div class="lab-current-release">Currently running version <strong id="lab-current-version">Loading...</strong></div>
++            <p class="lab-simulation-note">This lab is a simulation only. It does not create a PipelineRun or change the live Kubernetes Deployment.</p>
++          </section>
++
++          <section class="lab-result-card" aria-labelledby="lab-stages-heading">
++            <div class="lab-card-header">
++              <h3 id="lab-stages-heading">Stage-by-stage evidence</h3>
++              <span class="lab-card-eyebrow">EXPECTED RESULT</span>
++            </div>
++            <ol id="lab-stage-results" class="lab-stage-results">
++              <li class="lab-stage-placeholder">Select one of the scenarios to inspect its expected stages.</li>
++            </ol>
++          </section>
++        </div>
++        <details class="lab-response-details">
++          <summary>View evaluator response</summary>
++          <pre id="lab-evidence" class="lab-evidence">No scenario evaluated yet.</pre>
++        </details>
++      </section>
++
+       <!-- Two-column Section: Pipeline Workflow & Raw Telemetry Inspector -->
+       <section class="details-section" aria-labelledby="details-heading">
+         <h2 id="details-heading" class="visually-hidden">Pipeline Architecture and Live Verification</h2>
+diff --git a/public/styles.css b/public/styles.css
+index dc34bd2..24dbe45 100644
+--- a/public/styles.css
++++ b/public/styles.css
+@@ -496,3 +496,204 @@ body {
+     gap: 8px;
+   }
+ }
++
++
++/* Release Resilience Lab */
++.lab-section {
++  background: var(--bg-secondary);
++  border: 1px solid var(--border-muted);
++  border-radius: var(--radius-lg);
++  padding: 24px;
++  display: flex;
++  flex-direction: column;
++  gap: 18px;
++}
++
++.lab-heading-row,
++.lab-card-header {
++  display: flex;
++  align-items: flex-start;
++  justify-content: space-between;
++  gap: 16px;
++}
++
++.lab-subtitle {
++  margin-top: 5px;
++  color: var(--text-secondary);
++  font-size: 13px;
++}
++
++.lab-mode-label,
++.lab-card-eyebrow {
++  color: var(--text-muted);
++  font-family: var(--font-mono);
++  font-size: 10px;
++  letter-spacing: 0.07em;
++  text-transform: uppercase;
++}
++
++.lab-mode-label {
++  border: 1px solid var(--border-muted);
++  padding: 6px 9px;
++  white-space: nowrap;
++}
++
++.lab-scenarios {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 10px;
++}
++
++.lab-scenario-btn {
++  border: 1px solid var(--border-muted);
++  background: var(--bg-elevated);
++  color: var(--text-primary);
++  border-radius: var(--radius-md);
++  padding: 10px 14px;
++  font: inherit;
++  cursor: pointer;
++  transition: border-color var(--transition-fast), background-color var(--transition-fast);
++}
++
++.lab-scenario-btn:hover:not(:disabled),
++.lab-scenario-btn:focus-visible {
++  border-color: var(--accent-muted);
++  outline: none;
++}
++
++.lab-scenario-btn:disabled {
++  cursor: wait;
++  opacity: 0.65;
++}
++
++.lab-result-grid {
++  display: grid;
++  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
++  gap: 16px;
++}
++
++.lab-result-card {
++  min-width: 0;
++  border: 1px solid var(--border-muted);
++  border-radius: var(--radius-md);
++  background: var(--bg-main);
++  padding: 20px;
++}
++
++.lab-outcome-panel {
++  border-left: 3px solid var(--border-muted);
++}
++
++.lab-outcome-panel[data-outcome="ready"] { border-left-color: var(--status-healthy); }
++.lab-outcome-panel[data-outcome="blocked"] { border-left-color: var(--status-error); }
++.lab-outcome-panel[data-outcome="recovered"] { border-left-color: var(--accent-muted); }
++.lab-outcome-panel[data-outcome="pending"] { border-left-color: var(--status-pending); }
++.lab-outcome-panel[data-outcome="error"] { border-left-color: var(--status-error); }
++
++.lab-result-card h3 {
++  margin: 8px 0 10px;
++  font-size: 16px;
++  font-weight: 600;
++}
++
++.lab-outcome-summary,
++.lab-stage-copy p,
++.lab-simulation-note {
++  color: var(--text-secondary);
++  font-size: 13px;
++  line-height: 1.55;
++}
++
++.lab-current-release {
++  margin-top: 18px;
++  padding-top: 14px;
++  border-top: 1px solid var(--border-subtle);
++  color: var(--text-muted);
++  font-size: 12px;
++}
++
++.lab-current-release strong {
++  color: var(--accent);
++  font-family: var(--font-mono);
++  font-weight: 600;
++}
++
++.lab-simulation-note {
++  margin-top: 14px;
++  font-size: 11px;
++}
++
++.lab-stage-results {
++  list-style: none;
++  display: flex;
++  flex-direction: column;
++  gap: 14px;
++  margin-top: 16px;
++}
++
++.lab-stage-item {
++  display: grid;
++  grid-template-columns: 94px minmax(0, 1fr);
++  gap: 12px;
++  align-items: start;
++}
++
++.lab-stage-status {
++  display: inline-block;
++  padding: 4px 6px;
++  border: 1px solid var(--border-muted);
++  color: var(--text-secondary);
++  font-family: var(--font-mono);
++  font-size: 9px;
++  line-height: 1.3;
++  text-align: center;
++  overflow-wrap: anywhere;
++}
++
++.lab-stage-status.status-passed,
++.lab-stage-status.status-ready,
++.lab-stage-status.status-restored { color: var(--status-healthy); }
++.lab-stage-status.status-failed { color: var(--status-error); }
++.lab-stage-status.status-blocked,
++.lab-stage-status.status-skipped { color: var(--status-pending); }
++
++.lab-stage-copy strong {
++  display: block;
++  margin-bottom: 3px;
++  font-size: 13px;
++  font-weight: 600;
++}
++
++.lab-stage-copy p { font-size: 12px; }
++.lab-stage-placeholder { color: var(--text-muted); font-size: 13px; }
++
++.lab-response-details {
++  border-top: 1px solid var(--border-subtle);
++  padding-top: 12px;
++  color: var(--text-secondary);
++  font-size: 12px;
++}
++
++.lab-response-details summary { cursor: pointer; }
++.lab-evidence {
++  margin-top: 10px;
++  padding: 14px;
++  background: var(--bg-terminal);
++  color: var(--text-primary);
++  font: 11px/1.5 var(--font-mono);
++  white-space: pre-wrap;
++  overflow-wrap: anywhere;
++  max-height: 260px;
++  overflow: auto;
++}
++
++@media (max-width: 900px) {
++  .lab-result-grid { grid-template-columns: 1fr; }
++}
++
++@media (max-width: 640px) {
++  .lab-section { padding: 16px; }
++  .lab-heading-row { flex-direction: column; }
++  .lab-mode-label { align-self: flex-start; }
++  .lab-stage-item { grid-template-columns: 80px minmax(0, 1fr); gap: 8px; }
++}
+diff --git a/scripts/run-pipeline.ps1 b/scripts/run-pipeline.ps1
+index d98d737..7b774e3 100644
+--- a/scripts/run-pipeline.ps1
++++ b/scripts/run-pipeline.ps1
+@@ -6,6 +6,7 @@
+     named PipelineRun with specified image tag, and outputs diagnostic monitoring commands.
+ .EXAMPLE
+     .\scripts\run-pipeline.ps1 -RepoUrl "https://github.com/myuser/Tekton-Demo.git" -DockerHubUsername "myuser" -ImageTag "v1"
++    .\scripts\run-pipeline.ps1 -RepoUrl "https://github.com/myuser/Tekton-Demo.git" -DockerHubUsername "myuser" -ImageTag "v2-fail-demo" -DemoFailTests
+ #>
+ 
+ [CmdletBinding()]
+@@ -23,7 +24,10 @@ param(
+     [string]$Revision = "main",
+ 
+     [Parameter(Mandatory = $false)]
+-    [string]$Namespace = "default"
++    [string]$Namespace = "default",
++
++    [Parameter(Mandatory = $false, HelpMessage = "Inject one intentional failing test to demonstrate failure gating")]
++    [switch]$DemoFailTests
+ )
+ 
+ $ErrorActionPreference = "Stop"
+@@ -36,6 +40,8 @@ Write-Host "Git Revision:      $Revision" -ForegroundColor Gray
+ Write-Host "Docker Hub User:   $DockerHubUsername" -ForegroundColor Gray
+ Write-Host "Target Image Tag:  $ImageTag" -ForegroundColor Gray
+ Write-Host "Namespace:         $Namespace" -ForegroundColor Gray
++$demoFailTestsValue = if ($DemoFailTests) { "true" } else { "false" }
++Write-Host "Injected test failure: $demoFailTestsValue" -ForegroundColor Gray
+ Write-Host ""
+ 
+ $projectRoot = Split-Path -Parent $PSScriptRoot
+@@ -96,6 +102,8 @@ spec:
+       value: "$DockerHubUsername"
+     - name: image-tag
+       value: "$ImageTag"
++    - name: demo-fail-tests
++      value: "$demoFailTestsValue"
+   workspaces:
+     - name: shared-workspace
+       persistentVolumeClaim:
+diff --git a/src/index.js b/src/index.js
+index 4391c9b..7b006c1 100644
+--- a/src/index.js
++++ b/src/index.js
+@@ -56,6 +56,103 @@ function sendJson(res, statusCode, data) {
+   res.end(payload);
+ }
+ 
++/**
++ * Evaluates a release scenario for the UI's educational resilience lab.
++ * This endpoint never invokes kubectl and never changes the live deployment.
++ */
++const RELEASE_LAB_SCENARIOS = Object.freeze({
++  success: {
++    outcome: 'ready',
++    title: 'Quality gates passed',
++    summary: 'The candidate is eligible to proceed to deployment. This simulation does not deploy it.',
++    priorVersionPreserved: false,
++    stages: [
++      { name: 'Unit tests', status: 'passed', detail: 'Automated tests passed.' },
++      { name: 'Build and publish image', status: 'passed', detail: 'Kaniko would publish the versioned image.' },
++      { name: 'Kubernetes rollout', status: 'ready', detail: 'The candidate is ready for the deployment stage.' }
++    ]
++  },
++  'test-failure': {
++    outcome: 'blocked',
++    title: 'Candidate blocked at the test gate',
++    summary: 'The test Task fails, so the dependent image-build and deployment Tasks do not run. The currently deployed version remains in place.',
++    priorVersionPreserved: true,
++    stages: [
++      { name: 'Unit tests', status: 'failed', detail: 'A regression was detected by the test suite.' },
++      { name: 'Build and publish image', status: 'blocked', detail: 'Blocked because the test Task failed.' },
++      { name: 'Kubernetes rollout', status: 'skipped', detail: 'No new image is deployed; the existing Deployment is untouched.' }
++    ]
++  },
++  'rollout-failure': {
++    outcome: 'recovered',
++    title: 'Failed rollout — previous revision restored',
++    summary: 'If a real rollout fails and a previous Deployment revision exists, the deploy Task attempts kubectl rollout undo and verifies the restored revision. The pipeline still reports failure.',
++    priorVersionPreserved: true,
++    stages: [
++      { name: 'Unit tests', status: 'passed', detail: 'The candidate passed the test gate.' },
++      { name: 'Build and publish image', status: 'passed', detail: 'The candidate image was published.' },
++      { name: 'Kubernetes rollout', status: 'failed', detail: 'The candidate did not become ready before the rollout timeout.' },
++      { name: 'Rollback', status: 'restored', detail: 'The prior Deployment revision is restored when rollback succeeds.' }
++    ]
++  }
++});
++
++function handleReleaseLabRequest(req, res) {
++  const chunks = [];
++  const maxBodyBytes = 8192;
++  let bodyBytes = 0;
++  let tooLarge = false;
++
++  req.on('data', (chunk) => {
++    bodyBytes += chunk.length;
++    if (bodyBytes > maxBodyBytes) {
++      tooLarge = true;
++      return;
++    }
++    chunks.push(chunk);
++  });
++
++  req.on('end', () => {
++    if (tooLarge) {
++      return sendJson(res, 413, { error: 'Request body too large', code: 413 });
++    }
++
++    let payload;
++    try {
++      payload = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}');
++    } catch (_) {
++      return sendJson(res, 400, { error: 'Invalid JSON body', code: 400 });
++    }
++    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
++      return sendJson(res, 400, { error: 'JSON body must be an object', code: 400 });
++    }
++
++    const scenario = Object.hasOwn(RELEASE_LAB_SCENARIOS, payload.scenario)
++      ? RELEASE_LAB_SCENARIOS[payload.scenario]
++      : null;
++    if (!scenario) {
++      return sendJson(res, 400, {
++        error: 'Unknown scenario. Use success, test-failure, or rollout-failure.',
++        code: 400
++      });
++    }
++
++    return sendJson(res, 200, {
++      service: 'release-console',
++      simulationOnly: true,
++      liveClusterChanged: false,
++      scenario: payload.scenario,
++      currentVersion: process.env.APP_VERSION || 'dev-local',
++      currentCommit: process.env.GIT_COMMIT || 'local-dev-commit',
++      priorVersionPreserved: scenario.priorVersionPreserved,
++      outcome: scenario.outcome,
++      title: scenario.title,
++      summary: scenario.summary,
++      stages: scenario.stages
++    });
++  });
++}
++
+ /**
+  * Handles incoming HTTP requests for Release Console.
+  * @param {http.IncomingMessage} req 
+@@ -66,7 +163,20 @@ function requestHandler(req, res) {
+     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+     const pathname = url.pathname;
+ 
+-    // Only GET and HEAD methods are supported
++    // Interactive what-if evaluator; deliberately separate from live cluster control.
++    if (pathname === '/api/release-lab/evaluate') {
++      if (req.method !== 'POST') {
++        res.writeHead(405, {
++          'Content-Type': 'application/json; charset=utf-8',
++          'Allow': 'POST',
++          'X-Content-Type-Options': 'nosniff'
++        });
++        return res.end(JSON.stringify({ error: 'Method Not Allowed', code: 405 }));
++      }
++      return handleReleaseLabRequest(req, res);
++    }
++
++    // Ordinary application routes are read-only and accept GET/HEAD only.
+     if (req.method !== 'GET' && req.method !== 'HEAD') {
+       res.writeHead(405, { 'Content-Type': 'application/json; charset=utf-8', 'Allow': 'GET, HEAD' });
+       return res.end(JSON.stringify({ error: 'Method Not Allowed', code: 405 }));
+diff --git a/tekton/pipeline.yaml b/tekton/pipeline.yaml
+index abc5edc..afd1df7 100644
+--- a/tekton/pipeline.yaml
++++ b/tekton/pipeline.yaml
+@@ -23,6 +23,10 @@ spec:
+       type: string
+       default: v1
+       description: Semantic release tag for the container image (e.g. v1, v2)
++    - name: demo-fail-tests
++      type: string
++      default: "false"
++      description: Deliberately inject one failing test to demonstrate pipeline gating
+   workspaces:
+     - name: shared-workspace
+       description: Persistent storage shared across all pipeline tasks
+@@ -51,6 +55,9 @@ spec:
+       workspaces:
+         - name: source
+           workspace: shared-workspace
++      params:
++        - name: demo-fail-tests
++          value: $(params.demo-fail-tests)
+ 
+     # Stage 3: In-cluster OCI build using Kaniko and push to Docker Hub
+     - name: build-push
+diff --git a/tekton/pipelinerun-template.yaml b/tekton/pipelinerun-template.yaml
+index 28bfda2..20b37c3 100644
+--- a/tekton/pipelinerun-template.yaml
++++ b/tekton/pipelinerun-template.yaml
+@@ -20,10 +20,8 @@ spec:
+       value: "ba1aj1"
+     - name: image-tag
+       value: "v1"
+-    - name: app-version
+-      value: "v1"
+-    - name: git-commit
+-      value: "a15b0f890494498aa4d36451c6d437fe3bee6b17"
++    - name: demo-fail-tests
++      value: "false"
+   workspaces:
+     - name: shared-workspace
+       persistentVolumeClaim:
+diff --git a/tekton/rbac.yaml b/tekton/rbac.yaml
+index 0674691..e9dd854 100644
+--- a/tekton/rbac.yaml
++++ b/tekton/rbac.yaml
+@@ -18,6 +18,9 @@ rules:
+   - apiGroups: ["apps"]
+     resources: ["deployments", "deployments/status"]
+     verbs: ["get", "list", "watch", "create", "update", "patch"]
++  - apiGroups: ["apps"]
++    resources: ["replicasets", "replicasets/status"]
++    verbs: ["get", "list", "watch"]
+   - apiGroups: [""]
+     resources: ["services", "pods", "pods/log", "pods/status"]
+     verbs: ["get", "list", "watch", "create", "update", "patch"]
+diff --git a/tekton/tasks.yaml b/tekton/tasks.yaml
+index 8023f6b..32085fd 100644
+--- a/tekton/tasks.yaml
++++ b/tekton/tasks.yaml
+@@ -70,12 +70,19 @@ spec:
+       type: string
+       default: release-console
+       description: Subdirectory in workspace containing the project
++    - name: demo-fail-tests
++      type: string
++      default: "false"
++      description: Enable a deliberate failing test for the failure-gate demonstration only
+   workspaces:
+     - name: source
+       description: Shared PersistentVolume workspace
+   steps:
+     - name: run-unit-tests
+       image: node:20-alpine
++      env:
++        - name: DEMO_FORCE_TEST_FAILURE
++          value: "$(params.demo-fail-tests)"
+       script: |
+         #!/bin/sh
+         set -eu
+@@ -188,6 +195,17 @@ spec:
+ 
+         cd "${K8S_DIR}"
+ 
++        # Record whether a prior release exists before changing the Deployment.
++        PREVIOUS_DEPLOYMENT="false"
++        PREVIOUS_IMAGE=""
++        if kubectl get deployment release-console -n "$(params.namespace)" >/dev/null 2>&1; then
++          PREVIOUS_DEPLOYMENT="true"
++          PREVIOUS_IMAGE="$(kubectl get deployment release-console -n "$(params.namespace)" -o jsonpath='{.spec.template.spec.containers[?(@.name=="release-console")].image}' 2>/dev/null || true)"
++          echo "Previous deployment detected; previous image: ${PREVIOUS_IMAGE}"
++        else
++          echo "No previous deployment exists; rollback will not be possible on a first install."
++        fi
++
+         # Deterministically template deployment manifest with pipeline image & metadata
+         echo "Preparing deployment manifest..."
+         sed -e "s|DOCKERHUB_USERNAME/release-console:v1|$(params.image-reference)|g" \
+@@ -202,9 +220,26 @@ spec:
+         kubectl apply -f /tmp/deployment.yaml -n "$(params.namespace)"
+ 
+         echo "Waiting for Deployment rollout to complete (timeout: 120s)..."
+-        kubectl rollout status deployment/release-console -n "$(params.namespace)" --timeout=120s
+-
+-        echo "=========================================================="
+-        echo " [Task: deploy-application] Rollout Completed Successfully"
+-        echo "=========================================================="
++        if kubectl rollout status deployment/release-console -n "$(params.namespace)" --timeout=120s; then
++          echo "=========================================================="
++          echo " [Task: deploy-application] Rollout Completed Successfully"
++          echo "=========================================================="
++        else
++          echo "ERROR: Candidate rollout failed. The Task will attempt to restore the previous revision."
++          if [ "${PREVIOUS_DEPLOYMENT}" = "true" ] && [ -n "${PREVIOUS_IMAGE}" ]; then
++            if kubectl rollout undo deployment/release-console -n "$(params.namespace)"; then
++              if kubectl rollout status deployment/release-console -n "$(params.namespace)" --timeout=120s; then
++                echo "ROLLBACK VERIFIED: previous Deployment revision is available again."
++              else
++                echo "ERROR: Rollback was requested, but its rollout did not become ready."
++              fi
++            else
++              echo "ERROR: Kubernetes could not roll back to the previous Deployment revision."
++            fi
++          else
++            echo "No prior Deployment revision is available to restore."
++          fi
++          # Keep the PipelineRun failed so an unsuccessful release is never reported as green.
++          exit 1
++        fi
+         kubectl get deployment,pods,services -l app=release-console -n "$(params.namespace)"
+diff --git a/test/app.test.js b/test/app.test.js
+index 9562d2c..e951a5d 100644
+--- a/test/app.test.js
++++ b/test/app.test.js
+@@ -130,9 +130,57 @@ describe('Release Console - Server Test Suite', () => {
+     assert.equal(res.headers['allow'], 'GET, HEAD');
+   });
+ 
++  test('Release lab: test failure blocks image and deployment stages', async () => {
++    const res = await makeRequest('/api/release-lab/evaluate', {
++      method: 'POST',
++      headers: { 'Content-Type': 'application/json' },
++      body: JSON.stringify({ scenario: 'test-failure' })
++    });
++    assert.equal(res.statusCode, 200);
++    assert.equal(res.json.simulationOnly, true);
++    assert.equal(res.json.liveClusterChanged, false);
++    assert.equal(res.json.currentVersion, 'v1.0.0-test');
++    assert.equal(res.json.outcome, 'blocked');
++    assert.equal(res.json.priorVersionPreserved, true);
++    assert.deepEqual(res.json.stages.map((stage) => stage.status), ['failed', 'blocked', 'skipped']);
++  });
++
++  test('Release lab: healthy candidate is marked ready, not actually deployed', async () => {
++    const res = await makeRequest('/api/release-lab/evaluate', {
++      method: 'POST',
++      headers: { 'Content-Type': 'application/json' },
++      body: JSON.stringify({ scenario: 'success' })
++    });
++    assert.equal(res.statusCode, 200);
++    assert.equal(res.json.outcome, 'ready');
++    assert.equal(res.json.liveClusterChanged, false);
++  });
++
++  test('Release lab: unknown scenarios are rejected', async () => {
++    const res = await makeRequest('/api/release-lab/evaluate', {
++      method: 'POST',
++      headers: { 'Content-Type': 'application/json' },
++      body: JSON.stringify({ scenario: 'delete-everything' })
++    });
++    assert.equal(res.statusCode, 400);
++  });
++
++  test('Release lab: endpoint accepts POST only', async () => {
++    const res = await makeRequest('/api/release-lab/evaluate');
++    assert.equal(res.statusCode, 405);
++    assert.equal(res.headers.allow, 'POST');
++  });
++
+   // Directory traversal attack protection
+   test('Security Check: Path traversal attempt (../../etc/passwd) is blocked', async () => {
+     const res = await makeRequest('/../../etc/passwd');
+     assert.ok([403, 404].includes(res.statusCode), 'Path traversal must be rejected with 403 or 404');
+   });
++
++  // Controlled fault injection for the live CI/CD demo. Disabled by default.
++  if (process.env.DEMO_FORCE_TEST_FAILURE === 'true') {
++    test('DEMO FAULT INJECTION: candidate regression must fail the quality gate', () => {
++      assert.fail('Intentional demonstration failure: Tekton must block image build and deployment.');
++    });
++  }
+ });

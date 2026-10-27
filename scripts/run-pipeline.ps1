@@ -6,6 +6,7 @@
     named PipelineRun with specified image tag, and outputs diagnostic monitoring commands.
 .EXAMPLE
     .\scripts\run-pipeline.ps1 -RepoUrl "https://github.com/myuser/Tekton-Demo.git" -DockerHubUsername "myuser" -ImageTag "v1"
+    .\scripts\run-pipeline.ps1 -RepoUrl "https://github.com/myuser/Tekton-Demo.git" -DockerHubUsername "myuser" -ImageTag "v2-fail-demo" -DemoFailTests
 #>
 
 [CmdletBinding()]
@@ -23,7 +24,10 @@ param(
     [string]$Revision = "main",
 
     [Parameter(Mandatory = $false)]
-    [string]$Namespace = "default"
+    [string]$Namespace = "default",
+
+    [Parameter(Mandatory = $false, HelpMessage = "Inject one intentional failing test to demonstrate failure gating")]
+    [switch]$DemoFailTests
 )
 
 $ErrorActionPreference = "Stop"
@@ -36,6 +40,8 @@ Write-Host "Git Revision:      $Revision" -ForegroundColor Gray
 Write-Host "Docker Hub User:   $DockerHubUsername" -ForegroundColor Gray
 Write-Host "Target Image Tag:  $ImageTag" -ForegroundColor Gray
 Write-Host "Namespace:         $Namespace" -ForegroundColor Gray
+$demoFailTestsValue = if ($DemoFailTests) { "true" } else { "false" }
+Write-Host "Injected test failure: $demoFailTestsValue" -ForegroundColor Gray
 Write-Host ""
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
@@ -96,6 +102,8 @@ spec:
       value: "$DockerHubUsername"
     - name: image-tag
       value: "$ImageTag"
+    - name: demo-fail-tests
+      value: "$demoFailTestsValue"
   workspaces:
     - name: shared-workspace
       persistentVolumeClaim:

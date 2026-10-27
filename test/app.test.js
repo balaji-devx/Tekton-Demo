@@ -130,9 +130,57 @@ describe('Release Console - Server Test Suite', () => {
     assert.equal(res.headers['allow'], 'GET, HEAD');
   });
 
+  test('Release lab: test failure blocks image and deployment stages', async () => {
+    const res = await makeRequest('/api/release-lab/evaluate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scenario: 'test-failure' })
+    });
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.json.simulationOnly, true);
+    assert.equal(res.json.liveClusterChanged, false);
+    assert.equal(res.json.currentVersion, 'v1.0.0-test');
+    assert.equal(res.json.outcome, 'blocked');
+    assert.equal(res.json.priorVersionPreserved, true);
+    assert.deepEqual(res.json.stages.map((stage) => stage.status), ['failed', 'blocked', 'skipped']);
+  });
+
+  test('Release lab: healthy candidate is marked ready, not actually deployed', async () => {
+    const res = await makeRequest('/api/release-lab/evaluate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scenario: 'success' })
+    });
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.json.outcome, 'ready');
+    assert.equal(res.json.liveClusterChanged, false);
+  });
+
+  test('Release lab: unknown scenarios are rejected', async () => {
+    const res = await makeRequest('/api/release-lab/evaluate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scenario: 'delete-everything' })
+    });
+    assert.equal(res.statusCode, 400);
+  });
+
+  test('Release lab: endpoint accepts POST only', async () => {
+    const res = await makeRequest('/api/release-lab/evaluate');
+    assert.equal(res.statusCode, 405);
+    assert.equal(res.headers.allow, 'POST');
+  });
+
   // Directory traversal attack protection
   test('Security Check: Path traversal attempt (../../etc/passwd) is blocked', async () => {
     const res = await makeRequest('/../../etc/passwd');
     assert.ok([403, 404].includes(res.statusCode), 'Path traversal must be rejected with 403 or 404');
   });
+
+  // Controlled fault injection for the live CI/CD demo. Disabled by default.
+  if (process.env.DEMO_FORCE_TEST_FAILURE === 'true') {
+    test('DEMO FAULT INJECTION: candidate regression must fail the quality gate', () => {
+      assert.fail('Intentional demonstration failure: Tekton must block image build and deployment.');
+    });
+  }
 });

@@ -14,3 +14,75 @@ kubectl port-forward svc/release-console-service 3000:3000 -n default
 
 kubectl get pipelineruns
 kubectl get taskruns
+
+$ErrorActionPreference = "Stop"
+
+Write-Host "`nConfiguring release v2..." -ForegroundColor Cyan
+
+$templatePath = ".\tekton\pipelinerun-template.yaml"
+$template = Get-Content $templatePath -Raw
+
+$template = $template -replace '(?m)(name:\simage-tag\s\r?\n\svalue:\s)v[0-9]+', '${1}v2'
+$template = $template -replace '(?m)(name:\sapp-version\s\r?\n\svalue:\s)v[0-9]+', '${1}v2'
+
+Set-Content -Path $templatePath -Value $template -NoNewline
+
+Write-Host "`nChecking v2 configuration..." -ForegroundColor Yellow
+Select-String -Path $templatePath -Pattern 'image-tag|app-version|value: v2' -Context 0,2
+
+git add .\tekton\pipelinerun-template.yaml
+
+git diff --cached --quiet
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "`nNo new template changes to commit." -ForegroundColor Yellow
+}
+else {
+    git commit -m "Configure release v2"
+    if ($LASTEXITCODE -ne 0) {
+        throw "Git commit failed."
+    }
+}
+
+Write-Host "`nPushing v2 configuration to GitHub..." -ForegroundColor Cyan
+
+git push origin main
+if ($LASTEXITCODE -ne 0) {
+    throw "Git push failed. Check your internet connection and try again."
+}
+
+Write-Host "`nStarting v2 pipeline..." -ForegroundColor Cyan
+
+$run = kubectl create -f $templatePath -o name
+if ($LASTEXITCODE -ne 0 -or -not $run) {
+    throw "Could not create the PipelineRun."
+}
+
+Write-Host "Created: $run" -ForegroundColor Green
+Write-Host "`nWaiting for pipeline completion (up to 15 minutes)..." -ForegroundColor Yellow
+
+kubectl wait --for=condition=Succeeded $run -n default --timeout=15m
+if ($LASTEXITCODE -ne 0) {
+    kubectl get pipelineruns -n default
+    kubectl get taskruns -n default
+    throw "Pipeline failed or timed out."
+}
+
+Write-Host "`nVerifying deployment..." -ForegroundColor Green
+
+kubectl rollout status deployment/release-console -n default --timeout=180s
+if ($LASTEXITCODE -ne 0) {
+    throw "Deployment rollout failed."
+}
+
+$image = kubectl get deployment release-console -n default -o jsonpath='{.spec.template.spec.containers[0].image}'
+Write-Host "`nDeployed image: $image" -ForegroundColor Cyan
+
+if ($image -ne "docker.io/ba1aj1/release-console:v2") {
+    throw "Deployment is not using the expected v2 image."
+}
+
+Write-Host "`nRelease v2 deployed successfully!" -ForegroundColor Green
+kubectl get pods -n default -l app=release-console
+
+Write-Host "`nOpen http://localhost:3001 and press Ctrl+F5." -ForegroundColor Green
+kubectl port-forward service/release-console-service 3001:3000 -n default

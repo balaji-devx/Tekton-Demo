@@ -49,7 +49,7 @@
             </div>
           </div>
           <p class="overview-copy">
-            This application is continuously deployed through an automated, non-cloud pipeline executing inside a local Minikube Kubernetes cluster. Every code update is cloned, tested, containerised with Kaniko, published to Docker Hub, and rolled out via Tekton Pipelines.
+            This application is released through a non-cloud CI/CD pipeline on a local Minikube Kubernetes cluster. After a PipelineRun is manually triggered, Tekton clones and tests the source, Kaniko builds and publishes the image, and the deployment Task updates Kubernetes.
           </p>
         </div>
       </section>
@@ -91,6 +91,47 @@
             <span class="panel-foot">Alpine Node.js 20 base</span>
           </div>
         </div>
+      </section>
+
+      <!-- Interactive what-if scenarios: these evaluate policy and never mutate Minikube. -->
+      <section class="lab-section" aria-labelledby="lab-heading">
+        <div class="lab-heading-row">
+          <div>
+            <h2 class="section-title" id="lab-heading">Release Resilience Lab</h2>
+            <p class="lab-subtitle">Explore how the pipeline should behave when a release passes or fails.</p>
+          </div>
+          <span class="lab-mode-label">WHAT-IF SIMULATION</span>
+        </div>
+
+        <div class="lab-scenarios" role="group" aria-label="Select release scenario">
+          <button class="lab-scenario-btn" type="button" data-scenario="success">Healthy candidate</button>
+          <button class="lab-scenario-btn" type="button" data-scenario="test-failure">Test failure</button>
+          <button class="lab-scenario-btn" type="button" data-scenario="rollout-failure">Rollout failure</button>
+        </div>
+
+        <div class="lab-result-grid">
+          <section class="lab-result-card lab-outcome-panel" id="lab-outcome-panel" data-outcome="idle" aria-live="polite">
+            <p class="lab-card-eyebrow">Expected pipeline decision</p>
+            <h3 id="lab-outcome-title">Choose a scenario</h3>
+            <p id="lab-outcome-summary" class="lab-outcome-summary">Run a what-if scenario to see the quality gate, deployment decision, and release protection behavior.</p>
+            <div class="lab-current-release">Currently running version <strong id="lab-current-version">Loading...</strong></div>
+            <p class="lab-simulation-note">This lab is a simulation only. It does not create a PipelineRun or change the live Kubernetes Deployment.</p>
+          </section>
+
+          <section class="lab-result-card" aria-labelledby="lab-stages-heading">
+            <div class="lab-card-header">
+              <h3 id="lab-stages-heading">Stage-by-stage evidence</h3>
+              <span class="lab-card-eyebrow">EXPECTED RESULT</span>
+            </div>
+            <ol id="lab-stage-results" class="lab-stage-results">
+              <li class="lab-stage-placeholder">Select one of the scenarios to inspect its expected stages.</li>
+            </ol>
+          </section>
+        </div>
+        <details class="lab-response-details">
+          <summary>View evaluator response</summary>
+          <pre id="lab-evidence" class="lab-evidence">No scenario evaluated yet.</pre>
+        </details>
       </section>
 
       <!-- Two-column Section: Pipeline Workflow & Raw Telemetry Inspector -->

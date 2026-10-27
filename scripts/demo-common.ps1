@@ -22,7 +22,12 @@ function Get-DemoState {
         try {
             $content = Get-Content -Path $statePath -Raw -Encoding UTF8
             if (-not [string]::IsNullOrWhiteSpace($content)) {
-                return ($content | ConvertFrom-Json)
+                $obj = $content | ConvertFrom-Json
+                $hash = [ordered]@{}
+                foreach ($prop in $obj.PSObject.Properties) {
+                    $hash[$prop.Name] = $prop.Value
+                }
+                return $hash
             }
         } catch {
             Write-Warning "Could not parse existing state file ($statePath): $_"

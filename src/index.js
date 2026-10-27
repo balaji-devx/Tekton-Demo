@@ -154,6 +154,73 @@ function handleReleaseLabRequest(req, res) {
 }
 
 /**
+ * DevOps Arena — Quiz question bank served from the backend.
+ * Returns a batch of questions for the requested category and difficulty.
+ */
+const QUIZ_QUESTION_BANK = [
+  { id: 1, category: 'docker', difficulty: 'beginner', question: 'What is the default Docker network driver?', options: ['bridge', 'host', 'overlay', 'macvlan'], correct: 0, explanation: 'The default Docker network driver is "bridge".' },
+  { id: 2, category: 'docker', difficulty: 'beginner', question: 'Which Dockerfile instruction sets the base image?', options: ['RUN', 'FROM', 'COPY', 'CMD'], correct: 1, explanation: 'FROM initializes a new build stage and sets the base image.' },
+  { id: 3, category: 'kubernetes', difficulty: 'beginner', question: 'What is the smallest deployable unit in Kubernetes?', options: ['Container', 'Pod', 'Node', 'Deployment'], correct: 1, explanation: 'A Pod is the smallest deployable unit in Kubernetes.' },
+  { id: 4, category: 'tekton', difficulty: 'beginner', question: 'What is a Tekton Task?', options: ['A running container', 'A reusable series of steps', 'A Kubernetes Service', 'A Docker image'], correct: 1, explanation: 'A Tekton Task defines sequential steps to perform a CI/CD action.' },
+  { id: 5, category: 'cicd', difficulty: 'beginner', question: 'What does CI stand for in CI/CD?', options: ['Container Integration', 'Continuous Integration', 'Code Inspection', 'Cloud Infrastructure'], correct: 1, explanation: 'CI stands for Continuous Integration.' },
+  { id: 6, category: 'git', difficulty: 'beginner', question: 'What does "git clone" do?', options: ['Creates a branch', 'Copies a remote repository locally', 'Deletes a repo', 'Merges branches'], correct: 1, explanation: '"git clone" creates a local copy of a remote repository.' }
+];
+
+function handleQuizRequest(req, res) {
+  const chunks = [];
+  const maxBodyBytes = 8192;
+  let bodyBytes = 0;
+  let tooLarge = false;
+
+  req.on('data', (chunk) => {
+    bodyBytes += chunk.length;
+    if (bodyBytes > maxBodyBytes) {
+      tooLarge = true;
+      return;
+    }
+    chunks.push(chunk);
+  });
+
+  req.on('end', () => {
+    if (tooLarge) {
+      return sendJson(res, 413, { error: 'Request body too large', code: 413 });
+    }
+
+    let payload;
+    try {
+      payload = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}');
+    } catch (_) {
+      return sendJson(res, 400, { error: 'Invalid JSON body', code: 400 });
+    }
+
+    let pool = QUIZ_QUESTION_BANK.slice();
+    if (payload.category && payload.category !== 'all') {
+      pool = pool.filter((q) => q.category === payload.category);
+    }
+    if (payload.difficulty && payload.difficulty !== 'mixed') {
+      pool = pool.filter((q) => q.difficulty === payload.difficulty);
+    }
+
+    // Shuffle
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+
+    const count = Math.min(parseInt(payload.count, 10) || 10, pool.length);
+    const questions = pool.slice(0, count);
+
+    return sendJson(res, 200, {
+      service: 'release-console',
+      feature: 'devops-arena',
+      totalAvailable: pool.length,
+      count: questions.length,
+      questions: questions
+    });
+  });
+}
+
+/**
  * Handles incoming HTTP requests for Release Console.
  * @param {http.IncomingMessage} req 
  * @param {http.ServerResponse} res 
@@ -174,6 +241,19 @@ function requestHandler(req, res) {
         return res.end(JSON.stringify({ error: 'Method Not Allowed', code: 405 }));
       }
       return handleReleaseLabRequest(req, res);
+    }
+
+    // DevOps Arena quiz endpoint
+    if (pathname === '/api/quiz/questions') {
+      if (req.method !== 'POST') {
+        res.writeHead(405, {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Allow': 'POST',
+          'X-Content-Type-Options': 'nosniff'
+        });
+        return res.end(JSON.stringify({ error: 'Method Not Allowed', code: 405 }));
+      }
+      return handleQuizRequest(req, res);
     }
 
     // Ordinary application routes are read-only and accept GET/HEAD only.

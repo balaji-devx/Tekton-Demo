@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Release Console - Production telemetry and deployment verification for local Kubernetes CI/CD pipeline using Tekton and Docker.">
+  <meta name="description" content="Release Console - Production telemetry, deployment verification, and interactive DevOps quiz arena for local Kubernetes CI/CD pipeline using Tekton and Docker.">
   <title>Release Console — Local Kubernetes CI/CD</title>
-  <link rel="stylesheet" href="styles.css?v=resilience-lab-2">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=devops-arena-1">
 </head>
 <body>
   <div class="shell">
@@ -93,45 +96,170 @@
         </div>
       </section>
 
-      <!-- Interactive what-if scenarios: these evaluate policy and never mutate Minikube. -->
-      <section class="lab-section" aria-labelledby="lab-heading">
-        <div class="lab-heading-row">
-          <div>
-            <h2 class="section-title" id="lab-heading">Release Resilience Lab</h2>
-            <p class="lab-subtitle">Explore how the pipeline should behave when a release passes or fails.</p>
-          </div>
-          <span class="lab-mode-label">WHAT-IF SIMULATION</span>
-        </div>
-
-        <div class="lab-scenarios" role="group" aria-label="Select release scenario">
-          <button class="lab-scenario-btn" type="button" data-scenario="success">Healthy Candidate</button>
-          <button class="lab-scenario-btn" type="button" data-scenario="test-failure">Test Failure</button>
-          <button class="lab-scenario-btn" type="button" data-scenario="rollout-failure">Rollout Failure</button>
-        </div>
-
-        <div class="lab-result-grid">
-          <section class="lab-result-card lab-outcome-panel" id="lab-outcome-panel" data-outcome="idle" aria-live="polite">
-            <p class="lab-card-eyebrow">Expected pipeline decision</p>
-            <h3 id="lab-outcome-title">Choose a scenario</h3>
-            <p id="lab-outcome-summary" class="lab-outcome-summary">Run a what-if scenario to see the quality gate, deployment decision, and release protection behavior.</p>
-            <div class="lab-current-release">Currently running version <strong id="lab-current-version">Loading...</strong></div>
-            <p class="lab-simulation-note">This lab is a simulation only. It does not create a PipelineRun or change the live Kubernetes Deployment.</p>
-          </section>
-
-          <section class="lab-result-card" aria-labelledby="lab-stages-heading">
-            <div class="lab-card-header">
-              <h3 id="lab-stages-heading">Stage-by-stage evidence</h3>
-              <span class="lab-card-eyebrow">EXPECTED RESULT</span>
+      <!-- DevOps Arena — Interactive Technical Challenge -->
+      <section class="arena-section" aria-labelledby="arena-heading" id="devops-arena">
+        <div class="arena-header-row">
+          <div class="arena-header-left">
+            <div class="arena-icon-wrap">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
             </div>
-            <ol id="lab-stage-results" class="lab-stage-results">
-              <li class="lab-stage-placeholder">Select one of the scenarios to inspect its expected stages.</li>
-            </ol>
-          </section>
+            <div>
+              <h2 class="section-title" id="arena-heading">DevOps Arena</h2>
+              <p class="arena-subtitle">Interactive Technical Challenge — Test your CI/CD knowledge</p>
+            </div>
+          </div>
+          <div class="arena-badges">
+            <span class="arena-badge arena-badge-live" id="arena-status-badge">READY</span>
+            <span class="arena-badge arena-badge-info" id="arena-version-badge">Running on <strong id="arena-running-version">...</strong></span>
+          </div>
         </div>
-        <details class="lab-response-details">
-          <summary>View evaluator response</summary>
-          <pre id="lab-evidence" class="lab-evidence">No scenario evaluated yet.</pre>
-        </details>
+
+        <!-- Main Screen: Category & Difficulty Selection -->
+        <div class="arena-view" id="arena-main-view">
+          <div class="arena-intro-card">
+            <h3 class="arena-intro-title">Choose Your Challenge</h3>
+            <p class="arena-intro-desc">Select a topic and difficulty level to begin. Answer questions within the time limit to earn the highest score.</p>
+          </div>
+
+          <div class="arena-config-grid">
+            <div class="arena-config-block">
+              <label class="arena-config-label">Topic</label>
+              <div class="arena-chip-group" id="arena-category-group" role="radiogroup" aria-label="Quiz topic">
+                <button class="arena-chip active" data-category="all" type="button" aria-pressed="true">All Topics</button>
+                <button class="arena-chip" data-category="docker" type="button" aria-pressed="false">Docker</button>
+                <button class="arena-chip" data-category="kubernetes" type="button" aria-pressed="false">Kubernetes</button>
+                <button class="arena-chip" data-category="tekton" type="button" aria-pressed="false">Tekton</button>
+                <button class="arena-chip" data-category="cicd" type="button" aria-pressed="false">CI/CD</button>
+                <button class="arena-chip" data-category="git" type="button" aria-pressed="false">Git</button>
+              </div>
+            </div>
+
+            <div class="arena-config-block">
+              <label class="arena-config-label">Difficulty</label>
+              <div class="arena-chip-group" id="arena-difficulty-group" role="radiogroup" aria-label="Quiz difficulty">
+                <button class="arena-chip active" data-difficulty="mixed" type="button" aria-pressed="true">Mixed</button>
+                <button class="arena-chip" data-difficulty="beginner" type="button" aria-pressed="false">Beginner</button>
+                <button class="arena-chip" data-difficulty="intermediate" type="button" aria-pressed="false">Intermediate</button>
+                <button class="arena-chip" data-difficulty="advanced" type="button" aria-pressed="false">Advanced</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="arena-stats-bar" id="arena-stats-bar">
+            <div class="arena-stat-cell">
+              <span class="arena-stat-value" id="stat-total-played">0</span>
+              <span class="arena-stat-label">Games Played</span>
+            </div>
+            <div class="arena-stat-cell">
+              <span class="arena-stat-value" id="stat-best-score">0</span>
+              <span class="arena-stat-label">Best Score</span>
+            </div>
+            <div class="arena-stat-cell">
+              <span class="arena-stat-value" id="stat-avg-accuracy">0%</span>
+              <span class="arena-stat-label">Avg Accuracy</span>
+            </div>
+            <div class="arena-stat-cell">
+              <span class="arena-stat-value" id="stat-streak">0</span>
+              <span class="arena-stat-label">Current Streak</span>
+            </div>
+          </div>
+
+          <button class="arena-start-btn" id="arena-start-btn" type="button">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Start Challenge
+          </button>
+        </div>
+
+        <!-- Quiz In-Progress View -->
+        <div class="arena-view arena-hidden" id="arena-quiz-view">
+          <div class="arena-quiz-topbar">
+            <div class="arena-progress-info">
+              <span class="arena-q-counter" id="arena-q-counter">Question 1 / 10</span>
+              <span class="arena-q-category" id="arena-q-category">Docker</span>
+              <span class="arena-q-difficulty" id="arena-q-difficulty" data-level="beginner">Beginner</span>
+            </div>
+            <div class="arena-timer-wrap">
+              <svg class="arena-timer-ring" width="48" height="48" viewBox="0 0 48 48">
+                <circle class="arena-timer-bg" cx="24" cy="24" r="20" fill="none" stroke-width="3"/>
+                <circle class="arena-timer-fg" id="arena-timer-circle" cx="24" cy="24" r="20" fill="none" stroke-width="3" stroke-dasharray="125.66" stroke-dashoffset="0"/>
+              </svg>
+              <span class="arena-timer-text" id="arena-timer-text">30</span>
+            </div>
+          </div>
+
+          <div class="arena-progress-bar-track">
+            <div class="arena-progress-bar-fill" id="arena-progress-fill" style="width: 10%"></div>
+          </div>
+
+          <div class="arena-question-card" id="arena-question-card">
+            <p class="arena-question-text" id="arena-question-text">Loading question...</p>
+          </div>
+
+          <div class="arena-answers-grid" id="arena-answers-grid">
+            <!-- Answer buttons injected by JS -->
+          </div>
+
+          <div class="arena-feedback-bar arena-hidden" id="arena-feedback-bar">
+            <div class="arena-feedback-icon" id="arena-feedback-icon"></div>
+            <div class="arena-feedback-text">
+              <strong id="arena-feedback-title">Correct!</strong>
+              <p id="arena-feedback-explanation">Explanation will appear here.</p>
+            </div>
+          </div>
+
+          <div class="arena-quiz-footer">
+            <div class="arena-score-live">
+              Score: <strong id="arena-live-score">0</strong>
+            </div>
+            <button class="btn btn-secondary arena-hidden" id="arena-next-btn" type="button">Next Question →</button>
+            <button class="btn btn-secondary" id="arena-quit-btn" type="button">Quit</button>
+          </div>
+        </div>
+
+        <!-- Results View -->
+        <div class="arena-view arena-hidden" id="arena-results-view">
+          <div class="arena-results-hero" id="arena-results-hero">
+            <div class="arena-results-grade" id="arena-results-grade">A+</div>
+            <h3 class="arena-results-title" id="arena-results-title">Outstanding!</h3>
+            <p class="arena-results-subtitle" id="arena-results-subtitle">You scored 10/10</p>
+          </div>
+
+          <div class="arena-results-stats">
+            <div class="arena-result-stat">
+              <span class="arena-result-stat-value" id="result-score">0</span>
+              <span class="arena-result-stat-label">Points Earned</span>
+            </div>
+            <div class="arena-result-stat">
+              <span class="arena-result-stat-value" id="result-correct">0/0</span>
+              <span class="arena-result-stat-label">Correct Answers</span>
+            </div>
+            <div class="arena-result-stat">
+              <span class="arena-result-stat-value" id="result-accuracy">0%</span>
+              <span class="arena-result-stat-label">Accuracy</span>
+            </div>
+            <div class="arena-result-stat">
+              <span class="arena-result-stat-value" id="result-time">0s</span>
+              <span class="arena-result-stat-label">Avg Time/Q</span>
+            </div>
+          </div>
+
+          <div class="arena-results-review" id="arena-results-review">
+            <h4 class="arena-review-heading">Answer Review</h4>
+            <ol class="arena-review-list" id="arena-review-list">
+              <!-- Review items injected by JS -->
+            </ol>
+          </div>
+
+          <div class="arena-results-actions">
+            <button class="arena-start-btn" id="arena-retry-btn" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
+              Play Again
+            </button>
+            <button class="btn btn-secondary" id="arena-home-btn" type="button">Back to Menu</button>
+          </div>
+        </div>
       </section>
 
       <!-- Two-column Section: Pipeline Workflow & Raw Telemetry Inspector -->
@@ -245,6 +373,6 @@
     </footer>
   </div>
 
-  <script src="app.js?v=resilience-lab-2"></script>
+  <script src="app.js?v=devops-arena-1"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 /**
  * Release Console - Automated Unit & Integration Tests
- * Validates HTTP contract, health endpoints, static delivery, and failure safety.
+ * Validates HTTP contract, health endpoints, static delivery, quiz arena, and failure safety.
  * Uses native Node.js test runner (node:test).
  */
 
@@ -206,13 +206,65 @@ describe('Release Console - Server Test Suite', () => {
     assert.equal(res.headers.allow, 'POST');
   });
 
+  // DevOps Arena quiz tests
+  test('DevOps Arena: POST /api/quiz/questions returns quiz questions', async () => {
+    const res = await makeRequest('/api/quiz/questions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category: 'all', difficulty: 'mixed' })
+    });
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.json.service, 'release-console');
+    assert.equal(res.json.feature, 'devops-arena');
+    assert.ok(Array.isArray(res.json.questions), 'Response must contain a questions array');
+    assert.ok(res.json.questions.length > 0, 'Must return at least one question');
+    assert.ok(typeof res.json.count === 'number', 'Must include count');
+  });
+
+  test('DevOps Arena: questions have required fields', async () => {
+    const res = await makeRequest('/api/quiz/questions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category: 'all', difficulty: 'mixed' })
+    });
+    assert.equal(res.statusCode, 200);
+    for (const q of res.json.questions) {
+      assert.ok(typeof q.id === 'number', 'Question must have numeric id');
+      assert.ok(typeof q.category === 'string', 'Question must have category');
+      assert.ok(typeof q.difficulty === 'string', 'Question must have difficulty');
+      assert.ok(typeof q.question === 'string', 'Question must have question text');
+      assert.ok(Array.isArray(q.options), 'Question must have options array');
+      assert.ok(q.options.length >= 2, 'Question must have at least 2 options');
+      assert.ok(typeof q.correct === 'number', 'Question must have correct answer index');
+      assert.ok(typeof q.explanation === 'string', 'Question must have explanation');
+    }
+  });
+
+  test('DevOps Arena: filtering by category works', async () => {
+    const res = await makeRequest('/api/quiz/questions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category: 'docker', difficulty: 'mixed' })
+    });
+    assert.equal(res.statusCode, 200);
+    for (const q of res.json.questions) {
+      assert.equal(q.category, 'docker', 'All questions must be docker category');
+    }
+  });
+
+  test('DevOps Arena: quiz endpoint accepts POST only', async () => {
+    const res = await makeRequest('/api/quiz/questions');
+    assert.equal(res.statusCode, 405);
+    assert.equal(res.headers.allow, 'POST');
+  });
+
   test('Static asset cache headers: CSS and JS served with no-cache, must-revalidate', async () => {
-    const cssRes = await makeRequest('/styles.css?v=resilience-lab-2');
+    const cssRes = await makeRequest('/styles.css?v=devops-arena-1');
     assert.equal(cssRes.statusCode, 200);
     assert.match(cssRes.headers['content-type'], /text\/css/);
     assert.equal(cssRes.headers['cache-control'], 'no-cache, must-revalidate');
 
-    const jsRes = await makeRequest('/app.js?v=resilience-lab-2');
+    const jsRes = await makeRequest('/app.js?v=devops-arena-1');
     assert.equal(jsRes.statusCode, 200);
     assert.match(jsRes.headers['content-type'], /application\/javascript/);
     assert.equal(jsRes.headers['cache-control'], 'no-cache, must-revalidate');

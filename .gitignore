@@ -26,3 +26,6 @@ Thumbs.db
 *.swp
 *.patch
 powershell.cmd
+
+# Demo release state
+.demo-release-state.json

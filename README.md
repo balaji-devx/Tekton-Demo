@@ -542,7 +542,37 @@ The rollout-undo path requires the pipeline ServiceAccount's least-privilege Rol
 
 ---
 
-## 25. Official Technical References
+## 25. One-Command Release Demonstration (4-Stage Presentation Walkthrough)
+
+Four dedicated entry-point scripts allow running the complete live release lifecycle with a single command per stage. All PipelineRun names, revisions, image tags, and state tracking are handled automatically via `.demo-release-state.json`.
+
+### Stage 1: Deploy V1 Baseline
+Verifies prerequisites, ensures `imagePullPolicy: Always`, sets the V1 baseline description in DevOps Arena, pushes changes, executes the `v1` Tekton pipeline, and records the initial deployment revision.
+```powershell
+.\scripts\demo-v1.ps1
+```
+
+### Stage 2: Deploy V2 Feature Update
+Validates the V1 state, updates DevOps Arena with visible challenge instructions, runs local tests, pushes the change, deploys the `v2` container image via Tekton, and records the V2 deployment revision.
+```powershell
+.\scripts\demo-v2.ps1
+```
+
+### Stage 3: Demonstrate Automated Quality Gate (V3 Failure Blocked)
+Injects an intentional test failure using `-DemoFailTests`. Tekton executes `fetch-source` and fails `run-tests`. Downstream container build (`build-push`) and deployment (`deploy`) are completely blocked. Proves the live cluster continues running the healthy V2 application.
+```powershell
+.\scripts\demo-v3-failure.ps1
+```
+
+### Stage 4: Roll Back Kubernetes Deployment to V1
+Reads the recorded V1 baseline revision from `.demo-release-state.json` and performs an exact revision rollback using `kubectl rollout undo deployment/release-console --to-revision=<v1-revision>`. Verifies the restored deployment is running the original V1 image.
+```powershell
+.\scripts\demo-rollback-v1.ps1
+```
+
+---
+
+## 26. Official Technical References
 
 - [Tekton Pipelines Documentation](https://tekton.dev/docs/pipelines/)
 - [Kubernetes Documentation: Deployments](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/)

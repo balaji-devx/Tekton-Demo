@@ -348,9 +348,18 @@ function Invoke-And-Monitor-Pipeline {
         }
     }
 
-    # Record invoke timestamp in UTC
+    # Record invoke timestamp in UTC and snapshot existing runs
     $invokeTimeUtc = [DateTime]::UtcNow.AddSeconds(-5)
-    $existingRuns = @(kubectl get pipelinerun -n "$Namespace" -l app=release-console -o jsonpath='{.items[*].metadata.name}' 2>$null -split ' ')
+    $existingRuns = @()
+    $existingJson = kubectl get pipelinerun -n "$Namespace" -l app=release-console -o json 2>$null | Out-String
+    if (-not [string]::IsNullOrWhiteSpace($existingJson)) {
+        try {
+            $parsedRuns = $existingJson | ConvertFrom-Json
+            if ($parsedRuns.items) {
+                $existingRuns = @($parsedRuns.items | ForEach-Object { $_.metadata.name })
+            }
+        } catch {}
+    }
 
     Write-Host "`n--- Triggering PipelineRun for tag '$ImageTag' ---" -ForegroundColor Cyan
     $launcherParams = @{

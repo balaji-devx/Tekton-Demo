@@ -453,10 +453,10 @@ function Invoke-And-Monitor-Pipeline {
         }
         $tasksProgress = if ($stageSummaryStrs.Count -gt 0) { $stageSummaryStrs -join " | " } else { "Initializing tasks..." }
 
-        $elapsed = [math]::Round(((Get-Date) - $startTime).TotalSeconds)
-        $elapsedMin = [math]::Floor($elapsed / 60)
-        $elapsedSec = $elapsed % 60
-        $elapsedStr = "{0:D2}:{1:D2}" -f $elapsedMin, $elapsedSec
+        $elapsedSecTotal = [int]((Get-Date) - $startTime).TotalSeconds
+        $elapsedMin = [int]($elapsedSecTotal / 60)
+        $elapsedSec = [int]($elapsedSecTotal % 60)
+        $elapsedStr = "{0:00}:{1:00}" -f $elapsedMin, $elapsedSec
 
         $reportText = "[$elapsedStr] PipelineRun: $pipelineRunName | $tasksProgress"
         if ($reportText -ne $lastReportText) {

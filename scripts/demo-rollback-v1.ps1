@@ -60,11 +60,17 @@ Write-Host "`n[3/4] Executing: kubectl rollout undo deployment/release-console -
 $undoCmd = "kubectl rollout undo deployment/release-console -n `"$Namespace`" --to-revision=$v1TargetRevision"
 Write-Host "  Running: $undoCmd" -ForegroundColor Gray
 
+$prevEAP = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
 $undoOutput = kubectl rollout undo deployment/release-console -n "$Namespace" --to-revision=$v1TargetRevision 2>&1
-if ($LASTEXITCODE -ne 0) {
+$undoExit = $LASTEXITCODE
+$ErrorActionPreference = $prevEAP
+
+if ($undoExit -ne 0) {
     throw "kubectl rollout undo failed: $undoOutput"
 }
-Write-Host "  $undoOutput" -ForegroundColor Green
+$cleanOutput = $undoOutput | Where-Object { $_ -notlike "Warning: *" -and $_ -notlike "warning: *" }
+Write-Host "  $($cleanOutput -join "`n  ")" -ForegroundColor Green
 
 # 5. Wait for Rollout Completion & Verify Restored Image
 Write-Host "`n[4/4] Monitoring rollback completion and verifying active image..." -ForegroundColor Cyan

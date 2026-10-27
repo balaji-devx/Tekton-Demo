@@ -221,6 +221,8 @@ function Commit-And-Push-File {
     )
     $repoRoot = Get-DemoRepoRoot
     Push-Location $repoRoot
+    $prevEAP = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
     try {
         $status = & git status --porcelain -- $FilesToStage 2>&1
         if ([string]::IsNullOrWhiteSpace($status)) {
@@ -252,6 +254,7 @@ function Commit-And-Push-File {
         }
         return $false
     } finally {
+        $ErrorActionPreference = $prevEAP
         Pop-Location
     }
 }
@@ -264,8 +267,13 @@ function Wait-DeploymentRollout {
         [string]$Namespace = "default"
     )
     Write-Host "Waiting for Deployment rollout to complete (timeout: ${TimeoutSeconds}s)..." -ForegroundColor Cyan
+    $prevEAP = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
     $rolloutOut = kubectl rollout status deployment/release-console -n "$Namespace" --timeout="${TimeoutSeconds}s" 2>&1
-    if ($LASTEXITCODE -ne 0) {
+    $rolloutExit = $LASTEXITCODE
+    $ErrorActionPreference = $prevEAP
+
+    if ($rolloutExit -ne 0) {
         throw "Deployment rollout failed or timed out: $rolloutOut"
     }
 

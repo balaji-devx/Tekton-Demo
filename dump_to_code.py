@@ -38,6 +38,7 @@ IGNORE_DIRS = {
 IGNORE_FILES = {
     "dump_to_code.py",     # Script itself
     "tekton.md",           # Generated markdown output
+    "powershell.cmd",      # Tooling wrapper
     ".DS_Store",
     "Thumbs.db",
     "package-lock.json.backup",
@@ -65,6 +66,7 @@ IGNORE_EXTENSIONS = {
     ".woff2",
     ".ttf",
     ".eot",
+    ".patch",
 }
 
 # Mapping of file extensions to markdown code block language identifiers

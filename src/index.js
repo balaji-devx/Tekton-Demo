@@ -63,36 +63,36 @@ function sendJson(res, statusCode, data) {
 const RELEASE_LAB_SCENARIOS = Object.freeze({
   success: {
     outcome: 'ready',
-    title: 'Quality gates passed',
-    summary: 'The candidate is eligible to proceed to deployment. This simulation does not deploy it.',
+    title: 'Quality gates passed — candidate ready',
+    summary: 'Source checkout succeeds, tests pass, image build and publishing succeed, and deployment completes. (Simulation only: does not run real Tekton Tasks or change the real cluster).',
     priorVersionPreserved: false,
     stages: [
-      { name: 'Unit tests', status: 'passed', detail: 'Automated tests passed.' },
-      { name: 'Build and publish image', status: 'passed', detail: 'Kaniko would publish the versioned image.' },
-      { name: 'Kubernetes rollout', status: 'ready', detail: 'The candidate is ready for the deployment stage.' }
+      { name: 'Unit tests', status: 'passed', detail: 'Automated test suite passed clean quality gate.' },
+      { name: 'Build and publish image', status: 'passed', detail: 'Kaniko builds and publishes the versioned container image to Docker Hub.' },
+      { name: 'Kubernetes rollout', status: 'ready', detail: 'Rolling update deployment completes and pod readiness probes verify health.' }
     ]
   },
   'test-failure': {
     outcome: 'blocked',
-    title: 'Candidate blocked at the test gate',
-    summary: 'The test Task fails, so the dependent image-build and deployment Tasks do not run. The currently deployed version remains in place.',
+    title: 'Candidate blocked at test gate',
+    summary: 'Source checkout succeeds, tests fail, image creation and deployment are blocked, and the existing deployment remains unchanged.',
     priorVersionPreserved: true,
     stages: [
-      { name: 'Unit tests', status: 'failed', detail: 'A regression was detected by the test suite.' },
-      { name: 'Build and publish image', status: 'blocked', detail: 'Blocked because the test Task failed.' },
-      { name: 'Kubernetes rollout', status: 'skipped', detail: 'No new image is deployed; the existing Deployment is untouched.' }
+      { name: 'Unit tests', status: 'failed', detail: 'A regression was detected by the test suite; pipeline halts immediately.' },
+      { name: 'Build and publish image', status: 'blocked', detail: 'Blocked because the test Task failed; Kaniko image build never runs.' },
+      { name: 'Kubernetes rollout', status: 'skipped', detail: 'Skipped; currently deployed cluster version remains completely untouched.' }
     ]
   },
   'rollout-failure': {
     outcome: 'recovered',
-    title: 'Failed rollout — previous revision restored',
-    summary: 'If a real rollout fails and a previous Deployment revision exists, the deploy Task attempts kubectl rollout undo and verifies the restored revision. The pipeline still reports failure.',
+    title: 'Failed rollout — rollback recovery attempted',
+    summary: 'Tests and image build succeed, the new rollout fails, and Kubernetes attempts to restore the previous Deployment revision if one is available. Recovery itself can fail if no prior revision exists. The pipeline reports failure.',
     priorVersionPreserved: true,
     stages: [
-      { name: 'Unit tests', status: 'passed', detail: 'The candidate passed the test gate.' },
-      { name: 'Build and publish image', status: 'passed', detail: 'The candidate image was published.' },
-      { name: 'Kubernetes rollout', status: 'failed', detail: 'The candidate did not become ready before the rollout timeout.' },
-      { name: 'Rollback', status: 'restored', detail: 'The prior Deployment revision is restored when rollback succeeds.' }
+      { name: 'Unit tests', status: 'passed', detail: 'Candidate passed the automated test gate.' },
+      { name: 'Build and publish image', status: 'passed', detail: 'Candidate container image was built and published to Docker Hub.' },
+      { name: 'Kubernetes rollout', status: 'failed', detail: 'Candidate pod failed readiness probes or rollout timed out.' },
+      { name: 'Rollback', status: 'restored', detail: 'Kubernetes attempts rollout undo to restore prior revision if available; recovery can fail if no prior revision exists.' }
     ]
   }
 });
@@ -220,11 +220,14 @@ function requestHandler(req, res) {
       const ext = path.extname(filePath).toLowerCase();
       const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
+      const noCacheExts = ['.html', '.css', '.js'];
       res.writeHead(200, {
         'Content-Type': contentType,
         'Content-Length': stats.size,
         'X-Content-Type-Options': 'nosniff',
-        'Cache-Control': ext === '.html' ? 'no-cache' : 'public, max-age=3600'
+        'Cache-Control': noCacheExts.includes(ext)
+          ? 'no-cache, must-revalidate'
+          : 'public, max-age=3600'
       });
 
       if (req.method === 'HEAD') {

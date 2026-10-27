@@ -76,23 +76,29 @@
       cachedHealth = await healthRes.json();
 
       // Render primary telemetry
-      elVersion.textContent = cachedInfo.version || 'Unknown';
-      labCurrentVersion.textContent = cachedInfo.version || 'Unknown';
+      if (elVersion) {
+        elVersion.textContent = cachedInfo.version || 'Unknown';
+      }
+      if (labCurrentVersion) {
+        labCurrentVersion.textContent = cachedInfo.version || 'Unknown';
+      }
       
       const commitSha = cachedInfo.commit || 'unknown';
-      elCommit.textContent = commitSha.length > 7 ? commitSha.substring(0, 7) : commitSha;
-      elCommit.title = commitSha;
+      if (elCommit) {
+        elCommit.textContent = commitSha.length > 7 ? commitSha.substring(0, 7) : commitSha;
+        elCommit.title = commitSha;
+      }
 
-      elEnv.textContent = cachedInfo.environment || 'Local';
-      elRuntime.textContent = `Node.js ${cachedInfo.nodeVersion || 'v20'}`;
+      if (elEnv) elEnv.textContent = cachedInfo.environment || 'Local';
+      if (elRuntime) elRuntime.textContent = `Node.js ${cachedInfo.nodeVersion || 'v20'}`;
 
       // Update status indicators
       if (cachedHealth.status === 'ok') {
         updateStatus('healthy', 'Pod Healthy (HTTP 200)');
-        elTerminalStatus.textContent = 'HTTP 200 OK';
+        if (elTerminalStatus) elTerminalStatus.textContent = 'HTTP 200 OK';
       } else {
         updateStatus('error', 'Degraded Health');
-        elTerminalStatus.textContent = 'Degraded';
+        if (elTerminalStatus) elTerminalStatus.textContent = 'Degraded';
       }
 
       renderInspector();
@@ -100,9 +106,14 @@
     } catch (err) {
       console.error('[Release Console] Telemetry fetch failure:', err);
       updateStatus('error', 'Endpoint Unreachable');
-      elTerminalStatus.textContent = 'Connection Error';
-      elTerminalContent.textContent = `Error connecting to backend: ${err.message}\nMake sure the Node.js application server or Kubernetes service is reachable.`;
-      elLatency.textContent = '--';
+      if (elTerminalStatus) elTerminalStatus.textContent = 'Connection Error';
+      if (elTerminalContent) {
+        elTerminalContent.textContent = `Error connecting to backend: ${err.message}\nMake sure the Node.js application server or Kubernetes service is reachable.`;
+      }
+      if (elLatency) elLatency.textContent = '--';
+      if (labCurrentVersion && (labCurrentVersion.textContent === 'Loading...' || !labCurrentVersion.textContent)) {
+        labCurrentVersion.textContent = 'Unavailable';
+      }
     }
   }
 
@@ -131,39 +142,50 @@
   });
 
   function renderLabResult(result) {
-    labOutcomePanel.dataset.outcome = result.outcome;
-    labOutcomeTitle.textContent = result.title;
-    labOutcomeSummary.textContent = result.summary;
-    labCurrentVersion.textContent = result.currentVersion || 'Unknown';
-    labStageResults.replaceChildren();
+    if (labOutcomePanel) labOutcomePanel.dataset.outcome = result.outcome;
+    if (labOutcomeTitle) labOutcomeTitle.textContent = result.title;
+    if (labOutcomeSummary) labOutcomeSummary.textContent = result.summary;
+    if (labCurrentVersion) {
+      labCurrentVersion.textContent = result.currentVersion || cachedInfo?.version || 'Unknown';
+    }
+    if (labStageResults) {
+      labStageResults.replaceChildren();
 
-    result.stages.forEach(function (stage) {
-      const item = document.createElement('li');
-      item.className = 'lab-stage-item';
+      if (Array.isArray(result.stages)) {
+        result.stages.forEach(function (stage) {
+          const item = document.createElement('li');
+          item.className = 'lab-stage-item';
 
-      const status = document.createElement('span');
-      status.className = `lab-stage-status status-${stage.status}`;
-      status.textContent = stage.status.replace(/-/g, ' ').toUpperCase();
+          const status = document.createElement('span');
+          status.className = `lab-stage-status status-${stage.status}`;
+          status.textContent = (stage.status || 'unknown').replace(/-/g, ' ').toUpperCase();
 
-      const content = document.createElement('div');
-      content.className = 'lab-stage-copy';
-      const title = document.createElement('strong');
-      title.textContent = stage.name;
-      const detail = document.createElement('p');
-      detail.textContent = stage.detail;
-      content.append(title, detail);
-      item.append(status, content);
-      labStageResults.append(item);
-    });
+          const content = document.createElement('div');
+          content.className = 'lab-stage-copy';
+          const title = document.createElement('strong');
+          title.textContent = stage.name;
+          const detail = document.createElement('p');
+          detail.textContent = stage.detail;
+          content.append(title, detail);
+          item.append(status, content);
+          labStageResults.append(item);
+        });
+      }
+    }
 
-    labEvidence.textContent = JSON.stringify(result, null, 2);
+    if (labEvidence) {
+      labEvidence.textContent = JSON.stringify(result, null, 2);
+    }
   }
 
   async function evaluateReleaseScenario(button) {
-    labScenarioButtons.forEach(function (candidate) { candidate.disabled = true; });
-    labOutcomeTitle.textContent = 'Evaluating scenario...';
-    labOutcomeSummary.textContent = 'The local evaluator is calculating the expected pipeline outcome.';
-    labOutcomePanel.dataset.outcome = 'pending';
+    labScenarioButtons.forEach(function (candidate) {
+      candidate.disabled = true;
+      candidate.setAttribute('aria-busy', 'true');
+    });
+    if (labOutcomeTitle) labOutcomeTitle.textContent = 'Evaluating scenario...';
+    if (labOutcomeSummary) labOutcomeSummary.textContent = 'The local evaluator is calculating the expected pipeline outcome.';
+    if (labOutcomePanel) labOutcomePanel.dataset.outcome = 'pending';
 
     try {
       const response = await fetch('/api/release-lab/evaluate', {
@@ -178,13 +200,17 @@
       }
       renderLabResult(result);
     } catch (error) {
-      labOutcomePanel.dataset.outcome = 'error';
-      labOutcomeTitle.textContent = 'Scenario evaluator unavailable';
-      labOutcomeSummary.textContent = error.message;
-      labStageResults.replaceChildren();
-      labEvidence.textContent = String(error.message);
+      if (labOutcomePanel) labOutcomePanel.dataset.outcome = 'error';
+      if (labOutcomeTitle) labOutcomeTitle.textContent = 'Scenario evaluator unavailable';
+      if (labOutcomeSummary) labOutcomeSummary.textContent = error.message;
+      if (labStageResults) labStageResults.replaceChildren();
+      if (labEvidence) labEvidence.textContent = String(error.message);
     } finally {
-      labScenarioButtons.forEach(function (candidate) { candidate.disabled = false; });
+      labScenarioButtons.forEach(function (candidate) {
+        candidate.disabled = false;
+        candidate.removeAttribute('aria-busy');
+      });
+      if (button) button.focus();
     }
   }
 

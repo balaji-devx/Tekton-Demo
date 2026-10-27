@@ -165,10 +165,57 @@ describe('Release Console - Server Test Suite', () => {
     assert.equal(res.statusCode, 400);
   });
 
+  test('Release lab: rollout failure simulates rollback recovery', async () => {
+    const res = await makeRequest('/api/release-lab/evaluate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scenario: 'rollout-failure' })
+    });
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.json.outcome, 'recovered');
+    assert.equal(res.json.priorVersionPreserved, true);
+    assert.deepEqual(res.json.stages.map((stage) => stage.status), ['passed', 'passed', 'failed', 'restored']);
+    assert.ok(res.json.stages.every((stage) => stage.name && stage.status && stage.detail));
+  });
+
+  test('Release lab: all valid scenarios return consistent JSON structure', async () => {
+    const scenarios = ['success', 'test-failure', 'rollout-failure'];
+    for (const scenario of scenarios) {
+      const res = await makeRequest('/api/release-lab/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scenario })
+      });
+      assert.equal(res.statusCode, 200);
+      assert.ok(typeof res.json.outcome === 'string');
+      assert.ok(typeof res.json.title === 'string');
+      assert.ok(typeof res.json.summary === 'string');
+      assert.equal(res.json.currentVersion, 'v1.0.0-test');
+      assert.ok(Array.isArray(res.json.stages));
+      for (const stage of res.json.stages) {
+        assert.ok(stage.name, 'Stage must have a name');
+        assert.ok(stage.status, 'Stage must have a status');
+        assert.ok(stage.detail, 'Stage must have a detail');
+      }
+    }
+  });
+
   test('Release lab: endpoint accepts POST only', async () => {
     const res = await makeRequest('/api/release-lab/evaluate');
     assert.equal(res.statusCode, 405);
     assert.equal(res.headers.allow, 'POST');
+  });
+
+  test('Static asset cache headers: CSS and JS served with no-cache, must-revalidate', async () => {
+    const cssRes = await makeRequest('/styles.css?v=resilience-lab-2');
+    assert.equal(cssRes.statusCode, 200);
+    assert.match(cssRes.headers['content-type'], /text\/css/);
+    assert.equal(cssRes.headers['cache-control'], 'no-cache, must-revalidate');
+
+    const jsRes = await makeRequest('/app.js?v=resilience-lab-2');
+    assert.equal(jsRes.statusCode, 200);
+    assert.match(jsRes.headers['content-type'], /application\/javascript/);
+    assert.equal(jsRes.headers['cache-control'], 'no-cache, must-revalidate');
   });
 
   // Directory traversal attack protection

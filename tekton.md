@@ -1,6 +1,7 @@
 # Project Codebase Dump: Tekton-Demo
 
-> Auto-generated from `e:\SEM 3\DEVOPS\Tekton-Demo`  
+> Auto-generated from `E:\SEM 3\DEVOPS\Tekton-Demo`
+
 > Total Files: **24**
 
 ---
@@ -9,30 +10,30 @@
 
 | # | File Path | Language | Lines | Size (Bytes) |
 |---|-----------|----------|-------|--------------|
-| 1 | [.dockerignore](#dockerignore) | `dockerfile` | 28 | 322 |
-| 2 | [.gitignore](#gitignore) | `gitignore` | 27 | 298 |
-| 3 | [Dockerfile](#dockerfile) | `dockerfile` | 39 | 1,009 |
-| 4 | [k8s/deployment.yaml](#k8sdeploymentyaml) | `yaml` | 66 | 1,661 |
-| 5 | [k8s/service.yaml](#k8sserviceyaml) | `yaml` | 18 | 295 |
-| 6 | [package.json](#packagejson) | `json` | 24 | 502 |
-| 7 | [package-lock.json](#packagelockjson) | `json` | 17 | 272 |
-| 8 | [public/app.js](#publicappjs) | `javascript` | 129 | 4,368 |
-| 9 | [public/index.html](#publicindexhtml) | `html` | 210 | 9,943 |
-| 10 | [public/styles.css](#publicstylescss) | `css` | 499 | 8,927 |
-| 11 | [README.md](#readmemd) | `markdown` | 537 | 26,415 |
+| 1 | [.dockerignore](#dockerignore) | `dockerfile` | 27 | 322 |
+| 2 | [.gitignore](#gitignore) | `gitignore` | 28 | 321 |
+| 3 | [Dockerfile](#dockerfile) | `dockerfile` | 38 | 1,009 |
+| 4 | [README.md](#readmemd) | `markdown` | 551 | 28,817 |
+| 5 | [k8s/deployment.yaml](#k8sdeploymentyaml) | `yaml` | 65 | 1,661 |
+| 6 | [k8s/service.yaml](#k8sserviceyaml) | `yaml` | 17 | 295 |
+| 7 | [package-lock.json](#packagelockjson) | `json` | 16 | 272 |
+| 8 | [package.json](#packagejson) | `json` | 23 | 502 |
+| 9 | [public/app.js](#publicappjs) | `javascript` | 224 | 8,702 |
+| 10 | [public/index.html](#publicindexhtml) | `html` | 250 | 12,685 |
+| 11 | [public/styles.css](#publicstylescss) | `css` | 741 | 15,147 |
 | 12 | [run.txt](#runtxt) | `text` | 88 | 2,928 |
-| 13 | [scripts/check-prerequisites.ps1](#scriptscheckprerequisitesps1) | `powershell` | 131 | 5,501 |
-| 14 | [scripts/run-pipeline.ps1](#scriptsrunpipelineps1) | `powershell` | 138 | 5,848 |
-| 15 | [scripts/setup-registry-secret.ps1](#scriptssetupregistrysecretps1) | `powershell` | 131 | 5,266 |
-| 16 | [scripts/validate-project.ps1](#scriptsvalidateprojectps1) | `powershell` | 154 | 5,262 |
-| 17 | [scripts/verify-deployment.ps1](#scriptsverifydeploymentps1) | `powershell` | 164 | 7,668 |
-| 18 | [src/index.js](#srcindexjs) | `javascript` | 179 | 5,474 |
-| 19 | [tekton/pipeline.yaml](#tektonpipelineyaml) | `yaml` | 92 | 2,849 |
-| 20 | [tekton/pipelinerun-template.yaml](#tektonpipelineruntemplateyaml) | `yaml` | 38 | 854 |
-| 21 | [tekton/pvc.yaml](#tektonpvcyaml) | `yaml` | 16 | 282 |
-| 22 | [tekton/rbac.yaml](#tektonrbacyaml) | `yaml` | 40 | 983 |
-| 23 | [tekton/tasks.yaml](#tektontasksyaml) | `yaml` | 211 | 7,335 |
-| 24 | [test/app.test.js](#testapptestjs) | `javascript` | 139 | 5,688 |
+| 13 | [scripts/check-prerequisites.ps1](#scriptscheckprerequisitesps1) | `powershell` | 130 | 5,501 |
+| 14 | [scripts/run-pipeline.ps1](#scriptsrunpipelineps1) | `powershell` | 145 | 6,504 |
+| 15 | [scripts/setup-registry-secret.ps1](#scriptssetupregistrysecretps1) | `powershell` | 130 | 5,266 |
+| 16 | [scripts/validate-project.ps1](#scriptsvalidateprojectps1) | `powershell` | 153 | 5,262 |
+| 17 | [scripts/verify-deployment.ps1](#scriptsverifydeploymentps1) | `powershell` | 163 | 7,668 |
+| 18 | [src/index.js](#srcindexjs) | `javascript` | 291 | 10,614 |
+| 19 | [tekton/pipeline.yaml](#tektonpipelineyaml) | `yaml` | 98 | 3,193 |
+| 20 | [tekton/pipelinerun-template.yaml](#tektonpipelineruntemplateyaml) | `yaml` | 35 | 812 |
+| 21 | [tekton/pvc.yaml](#tektonpvcyaml) | `yaml` | 15 | 282 |
+| 22 | [tekton/rbac.yaml](#tektonrbacyaml) | `yaml` | 42 | 1,138 |
+| 23 | [tekton/tasks.yaml](#tektontasksyaml) | `yaml` | 245 | 9,513 |
+| 24 | [test/app.test.js](#testapptestjs) | `javascript` | 233 | 10,186 |
 
 ---
 
@@ -69,6 +70,7 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
 ```
 
 ---
@@ -105,6 +107,9 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+*.patch
+powershell.cmd
+
 ```
 
 ---
@@ -153,11 +158,574 @@ EXPOSE 3000
 
 # Container entry point
 CMD ["node", "src/index.js"]
+
 ```
 
 ---
 
-## 4. `k8s/deployment.yaml`
+## 4. `README.md`
+
+**Path:** `README.md`  
+**Language:** `markdown`
+
+````markdown
+# Design and Implementation of a Non-Cloud CI/CD Pipeline Using Tekton, Docker and Kubernetes
+
+## 1. Project Title and Objective
+
+**Title:** Design and Implementation of a Non-Cloud CI/CD Pipeline Using Tekton, Docker and Kubernetes  
+**Project Application:** Release Console  
+**Domain:** DevOps, Cloud-Native Engineering, Container Orchestration  
+
+The primary objective of this project is to design, implement, and demonstrate a local Kubernetes-native Continuous Integration and Continuous Deployment (CI/CD) pipeline running on **Minikube** without relying on managed cloud compute infrastructure (e.g., AWS, GCP, Azure). GitHub and Docker Hub remain external hosted services. The current pipeline is started manually; GitHub push webhooks are not configured.
+
+Using **Tekton Pipelines**, **Docker**, and **Kubernetes**, this project automates the entire software delivery lifecycle:
+1. Cloning source code from a public Git repository after a manually triggered PipelineRun (GitHub push webhooks are not configured in this implementation).
+2. Executing automated unit test suites within containerised quality gates.
+3. Building a container image in-cluster using the daemonless **Kaniko** container builder.
+4. Publishing the versioned image to **Docker Hub**.
+5. Performing an automated rolling deployment to the local Kubernetes cluster.
+6. Validating operational health and telemetry through a live application: **Release Console**.
+
+---
+
+## 2. The Problem Being Addressed
+
+Modern DevOps coursework and enterprise systems frequently rely on proprietary managed cloud services (such as AWS CodePipeline, GitHub Actions hosted runners, or Google Cloud Build). While powerful, these approaches introduce critical challenges:
+- **Cloud Dependency & Cost:** Substantial ongoing recurring costs for cloud compute, managed Kubernetes clusters (EKS/GKE), and external network ingress/egress.
+- **Opacity of In-Cluster Execution:** Developers treat CI/CD as an external "black box" without understanding Kubernetes-native primitives, controllers, or Custom Resource Definitions (CRDs).
+- **Resource Constraints on Local Machines:** Running heavy enterprise toolchains (Jenkins, GitLab CI, heavy databases) on developer laptops with ~8 GB RAM frequently results in system thrashing and crashes.
+
+**Solution:** This project demonstrates that a fully standard, Kubernetes-native CI/CD architecture can be executed locally on a single developer workstation using open standards (Tekton, OCI containers, native Node.js), keeping memory utilization under 3 GB while providing enterprise-grade gating, versioning, and zero-downtime rolling updates.
+
+---
+
+## 3. Explanation of CI, CD and the Role of Tekton
+
+| Concept | Definition & Project Implementation |
+| :--- | :--- |
+| **Continuous Integration (CI)** | The automated practice of validating software changes as soon as they are committed. In this project, Tekton checks out source code into an ephemeral workspace, triggers clean dependency installation (`npm ci`), and runs `node:test` unit tests. If any test fails, CI halts immediately. |
+| **Continuous Deployment (CD)** | The automated mechanism by which tested code is packaged into an immutable container artifact, published to a registry, and rolled out to Kubernetes. Tekton invokes Kaniko to build the OCI container, tags it semantically (`v1`, `v2`), pushes it to Docker Hub, and applies rolling updates to the cluster. |
+| **Tekton Pipelines** | A Cloud Native Computing Foundation (CNCF) open-source framework for creating cloud-native CI/CD systems on top of Kubernetes. Unlike traditional CI servers that run as external VMs, Tekton runs natively as Kubernetes Custom Resource Definitions (CRDs). Each Task executes in its own isolated Kubernetes Pod, utilizing Kubernetes scheduling, RBAC, and storage primitives. |
+
+---
+
+## 4. System Architecture
+
+The following diagram illustrates the architecture and separation of concerns:
+
+```
+[ Developer Workstation ]
+        │
+        ▼ (git push)
+[ GitHub Repository ] (External Source Control)
+        │
+        │ (Cloned via alpine/git)
+        ▼
+╔═══════════════════════════════════════════════════════════════════╗
+║            LOCAL KUBERNETES CLUSTER (Minikube on Docker)          ║
+║                                                                   ║
+║  ┌─────────────────────────────────────────────────────────────┐  ║
+║  │                  Tekton Pipeline Engine                     │  ║
+║  │                                                             │  ║
+║  │  [Task 1: clone-source] ───► Captures Git Commit SHA        │  ║
+║  │            │                                                │  ║
+║  │            ▼                                                │  ║
+║  │  [Task 2: test-application] ──► Automated Quality Gate      │  ║
+║  │            │                    (Blocks pipeline on error)  │  ║
+║  │            ▼                                                │  ║
+║  │  [Task 3: build-and-push]   ──► Kaniko In-Cluster Build     │  ║
+║  │            │                    (Uses dockerhub-auth secret)│  ║
+║  │            ▼                                                │  ║
+║  │  [Task 4: deploy-app]       ──► Rollout & Status Verify     │  ║
+║  └─────────────────────────────────────────────────────────────┘  ║
+║            │                                                      ║
+║            │ Shared Workspace PVC (release-console-pvc)           ║
+║            ▼                                                      ║
+║  ┌─────────────────────────────────────────────────────────────┐  ║
+║  │                Application Runtime                          │  ║
+║  │                                                             │  ║
+║  │   Deployment: release-console (1 Pod, Port 3000)            │  ║
+║  │   Service: release-console-service (NodePort 30080)         │  ║
+║  │   Health Probe: /healthz | Telemetry: /api/info             │  ║
+║  └─────────────────────────────────────────────────────────────┘  ║
+╚═══════════════════════════════════════════════════════════════════╝
+        ▲                                │
+        │ (Kubernetes Secret Auth)       │ (Docker Image Push)
+        │                                ▼
+[ Docker Hub Container Registry ] (External OCI Registry)
+```
+
+---
+
+## 5. Complete Workflow Step-by-Step
+
+```
+1. Developer edits code & pushes to GitHub
+         │
+         ▼
+2. Launch PipelineRun (`run-pipeline.ps1`)
+         │
+         ▼
+3. Task: clone-source
+   └── Clones repo into shared PVC Workspace
+   └── Emits commit SHA as result
+         │
+         ▼
+4. Task: test-application
+   └── Runs `npm ci` and `node --test test/app.test.js`
+   └── [Gate]: If tests FAIL ──► PIPELINE HALTS (No build or deployment)
+   └── If tests PASS ──────────► Proceed to build
+         │
+         ▼
+5. Task: build-and-push-image
+   └── Kaniko executor builds Dockerfile inside Pod
+   └── Injects APP_VERSION and GIT_COMMIT build arguments
+   └── Authenticates via `dockerhub-auth` Secret
+   └── Pushes `username/release-console:<tag>` to Docker Hub
+         │
+         ▼
+6. Task: deploy-application
+   └── Updates Kubernetes Deployment manifest with new image tag
+   └── Applies Deployment and NodePort Service
+   └── Executes `kubectl rollout status` (waits for pod readiness)
+         │
+         ▼
+7. Verification & Health Monitoring
+   └── Developer runs `verify-deployment.ps1`
+   └── Browser visits `http://<minikube-ip>:30080`
+   └── Release Console UI displays live running version, commit SHA, and health state
+```
+
+---
+
+## 6. Technology Stack and Responsibilities
+
+| Technology | Version | Role in Architecture |
+| :--- | :--- | :--- |
+| **Node.js** | 20.x (Alpine) | Application runtime and HTTP server built exclusively with native modules (`node:http`, `node:fs`, `node:path`). |
+| **Node Test Runner** | Native `node:test` | Automated unit testing framework executed during the CI quality gate without external npm dependencies. |
+| **HTML5 / CSS3 / JS** | Vanilla standards | Frontend for **Release Console** using an intentional dark aesthetic without heavy frontend frameworks. |
+| **Git & GitHub** | Git 2.50+ | Distributed version control and remote source repository for Tekton clones. |
+| **Docker Engine** | 29.6+ | Container runtime backing Minikube through the `desktop-linux` context. |
+| **Docker Hub** | OCI Registry | Remote public container registry storing versioned application images. |
+| **Minikube** | 1.39+ | Local Kubernetes cluster running on Windows 10 with Docker driver. |
+| **Kubernetes (kubectl)** | v1.36+ / v1.37+ | Container orchestrator managing Deployment, Service, PVC, RBAC, and Secrets. |
+| **Tekton Pipelines** | v1 API | Kubernetes-native CI/CD controller and CRDs executing pipeline workflows. |
+| **Kaniko** | `v1.28.6` (martizih) | Maintained in-cluster container builder compiling Dockerfiles daemonless without host socket mounts. |
+| **PowerShell** | 5.1+ / 7.x | Automation scripts for prerequisite checks, secret setup, and deployment validation. |
+
+---
+
+## 7. Project Structure
+
+```
+release-console-tekton/
+│
+├── src/
+│   └── index.js                   # Application server (native HTTP, static files, health API)
+│
+├── public/
+│   ├── index.html                 # Semantic HTML5 UI for Release Console
+│   ├── styles.css                 # Dark, restrained stylesheet (strictly no pills or fake charts)
+│   └── app.js                     # Client-side telemetry polling and terminal inspector
+│
+├── test/
+│   └── app.test.js                # 8 comprehensive automated unit tests using node:test
+│
+├── k8s/
+│   ├── deployment.yaml            # Kubernetes Deployment (1 replica, probes, securityContext)
+│   └── service.yaml               # Kubernetes NodePort Service (Port 3000 -> NodePort 30080)
+│
+├── tekton/
+│   ├── pvc.yaml                   # PersistentVolumeClaim (500Mi) for shared pipeline workspace
+│   ├── rbac.yaml                  # Least-privilege ServiceAccount, Role, and RoleBinding
+│   ├── tasks.yaml                 # 4 Tekton Tasks (clone, test, build/push, deploy)
+│   ├── pipeline.yaml              # Sequential Pipeline linking tasks with quality gates
+│   └── pipelinerun-template.yaml  # PipelineRun invocation template
+│
+├── scripts/
+│   ├── check-prerequisites.ps1    # Non-destructive environment and tool audit
+│   ├── setup-registry-secret.ps1  # Secure Docker Hub credentials configuration
+│   ├── validate-project.ps1       # Local syntax validation and unit test execution
+│   ├── run-pipeline.ps1           # PipelineRun generator and execution trigger
+│   └── verify-deployment.ps1      # Post-deployment rollout and live HTTP verification
+│
+├── package.json                   # Project manifest (test & start scripts)
+├── package-lock.json              # Deterministic dependency lockfile
+├── Dockerfile                     # Multi-stage production container build (non-root)
+├── .dockerignore                  # Build context exclusions
+├── .gitignore                     # Git tracking exclusions
+└── README.md                      # Comprehensive project documentation
+```
+
+---
+
+## 8. Prerequisites
+
+To execute this project, your Windows workstation must have:
+- **Windows 10/11 Pro or Enterprise** (Build 22H2 recommended).
+- **Physical Memory:** Minimum 8 GB RAM (Minikube uses 3 GB).
+- **Docker Desktop:** Running and configured with the `desktop-linux` context.
+- **Git for Windows:** Installed and accessible via PowerShell.
+- **Minikube & kubectl:** Installed and in your system `%PATH%`.
+- **A Docker Hub Account:** Free personal account at [hub.docker.com](https://hub.docker.com/).
+- **A GitHub Account:** For hosting your repository fork/copy publicly.
+
+---
+
+## 9. Environment-Specific Information (Windows, Docker Desktop, Minikube)
+
+Your existing environment parameters:
+- **Cluster driver:** Docker (`minikube start --driver=docker`)
+- **Resource Allocation:** 2 CPUs, 3072 MB RAM, 20 GB disk
+- **Active kubectl context:** `minikube`
+- **Kubernetes Node status:** Ready
+- **Tekton Pipelines controller, webhook & events controller:** Verified as Running in `tekton-pipelines` namespace.
+
+> [!IMPORTANT]
+> The scripts and manifests in this project are strictly designed to run within your existing cluster without resetting Minikube or reinstalling Tekton.
+
+---
+
+## 10. Docker Hub Repository Preparation
+
+1. Log into your account at [hub.docker.com](https://hub.docker.com/).
+2. Click **Create Repository**.
+3. Set the Repository Name to: `release-console`.
+4. Set the Visibility to **Public**.
+   - *Why Public?* Keeping the demonstration repository public allows Minikube's kubelet to pull the newly built image cleanly on any node without needing cluster-wide image pull credentials.
+5. Generate a **Personal Access Token (PAT)**:
+   - Navigate to **Account Settings** -> **Security** -> **New Access Token**.
+   - Token Description: `tekton-local-pipeline`.
+   - Access Permissions: **Read & Write**.
+   - Copy the generated token for use in the setup script.
+
+---
+
+## 11. GitHub Repository Setup and Push Commands
+
+Because Tekton's `clone-source` task clones from source control, create a public GitHub repository for your project:
+
+1. Create a new public repository on GitHub named `Tekton-Demo` (or `release-console`).
+2. Run the following commands in Windows PowerShell from the project root:
+
+```powershell
+# Navigate to the workspace root
+cd "e:\SEM 3\DEVOPS\Tekton-Demo"
+
+# Initialize local git repository (if not already initialized)
+git init -b main
+
+# Stage all files
+git add .
+
+# Create the initial commit
+git commit -m "feat: initial commit of Release Console and Tekton CI/CD pipeline"
+
+# Add your GitHub repository remote (replace with your actual username/repo)
+git remote add origin https://github.com/YOUR_GITHUB_USERNAME/Tekton-Demo.git
+
+# Push main branch to GitHub
+git push -u origin main
+```
+
+When you make modifications to the application later (such as during version updates or failure testing), commit and push them with:
+```powershell
+git add .
+git commit -m "chore: release update v2"
+git push origin main
+```
+
+---
+
+## 12. Registry Secret Setup
+
+Run the provided secure PowerShell script to configure your credentials inside Kubernetes:
+
+```powershell
+.\scripts\setup-registry-secret.ps1
+```
+
+**How it works:**
+- It prompts for your Docker Hub username.
+- It prompts for your Docker Hub Access Token securely (`Read-Host -AsSecureString`), ensuring the token is never displayed or echoed.
+- It creates a standard Docker authentication JSON payload in memory.
+- It applies a Kubernetes Secret named `dockerhub-auth` in namespace `default` containing both `config.json` (used by Kaniko) and `.dockerconfigjson` (standard Kubernetes).
+- It removes any temporary files immediately upon completion.
+
+---
+
+## 13. Deep Dive: Tekton Tasks, Pipeline, Workspaces, and Kaniko
+
+### PersistentVolumeClaim Workspace (`tekton/pvc.yaml`)
+A single `500Mi` volume (`release-console-pvc`) is provisioned using Minikube's `standard` StorageClass. This shared volume persists across sequential Tasks in a PipelineRun, allowing `clone-source` to write the files that `test-application`, `build-and-push-image`, and `deploy-application` subsequently access.
+
+### Tekton Tasks (`tekton/tasks.yaml`)
+1. **`clone-source`**:
+   - Runs `alpine/git:v2.45.2`.
+   - Clones the target GitHub repository into `$(workspaces.source.path)/release-console`.
+   - Runs `git rev-parse HEAD` and writes the resulting commit SHA to `$(results.commit.path)`.
+2. **`test-application`**:
+   - Runs `node:20-alpine`.
+   - Navigates into the workspace and executes `npm ci` followed by `npm test`.
+   - Emits structured execution logs. Halts with exit code 1 if any test fails.
+3. **`build-and-push-image` (Kaniko)**:
+   - Runs `martizih/kaniko:v1.28.6` (maintained community fork by mzihlmann/osscontainertools).
+   - Drop-in continuation of Kaniko supporting up-to-date dependencies and vulnerability patches for daemonless in-cluster builds without requiring Docker daemon privileges.
+   - Mounts the `dockerhub-auth` secret at `/kaniko/.docker` to read credentials.
+   - Compiles the Dockerfile using the shared workspace context and pushes `docker.io/<username>/release-console:<tag>` to Docker Hub.
+4. **`deploy-application`**:
+   - Runs `alpine/k8s:1.37.0` (Kubernetes v1.37 compatible toolbox containing `sh`, `sed`, and `kubectl`).
+   - Templates `k8s/deployment.yaml` with the exact image tag and Git commit SHA.
+   - Applies the Deployment and Service manifests.
+   - Executes `kubectl rollout status deployment/release-console --timeout=120s` to block until the new pod is healthy.
+
+### Pipeline Sequencing (`tekton/pipeline.yaml`)
+The pipeline enforces sequential execution using `runAfter`:
+- `run-tests` specifies `runAfter: [fetch-source]`
+- `build-push` specifies `runAfter: [run-tests]`
+- `deploy` specifies `runAfter: [build-push]`
+
+---
+
+## 14. How the Dockerfile Builds the Container
+
+The application's `Dockerfile` follows enterprise containerisation best practices:
+- **Base Image:** `node:20-alpine` (ultra-lightweight footprint, ~50 MB).
+- **Layer Caching:** Copies `package.json` and `package-lock.json` first, executing `npm ci --only=production` before copying source code.
+- **Build Arguments:** Accepts `APP_VERSION` and `GIT_COMMIT` dynamically from Kaniko, setting them as runtime environment variables.
+- **Security:** Switches to the unprivileged built-in `node` user (`USER node`, UID 1000) to prevent container escape vulnerabilities.
+- **Port:** Exposes internal HTTP port 3000.
+
+---
+
+## 15. Kubernetes Deployment and NodePort Service
+
+- **Deployment (`k8s/deployment.yaml`):**
+  - Replicas: 1
+  - Resource Requests: 50m CPU, 64Mi Memory (extremely lightweight for laptop).
+  - Resource Limits: 200m CPU, 128Mi Memory.
+  - Health Probes: HTTP probes on `/healthz` for both liveness (period 10s) and readiness (period 5s).
+  - Security Context: `runAsNonRoot: true`, `runAsUser: 1000`.
+- **Service (`k8s/service.yaml`):**
+  - Type: `NodePort`
+  - Targets container port 3000.
+  - Exposes fixed **NodePort 30080** on the Minikube cluster IP.
+
+---
+
+## 16. How to Launch the Complete Pipeline
+
+Run the automated orchestrator script:
+
+```powershell
+.\scripts\run-pipeline.ps1 `
+  -RepoUrl "https://github.com/YOUR_GITHUB_USERNAME/Tekton-Demo.git" `
+  -DockerHubUsername "YOUR_DOCKERHUB_USERNAME" `
+  -ImageTag "v1"
+```
+
+The script will:
+1. Verify the current kubectl context is `minikube`.
+2. Ensure the `dockerhub-auth` secret exists.
+3. Declaratively apply `tekton/pvc.yaml`, `tekton/rbac.yaml`, `tekton/tasks.yaml`, and `tekton/pipeline.yaml`.
+4. Generate a timestamped PipelineRun manifest (e.g. `release-console-run-v1-20261025-183000`).
+5. Submit the PipelineRun to Kubernetes.
+
+---
+
+## 17. How to Monitor TaskRuns and PipelineRuns
+
+Inspect the status of your running pipeline:
+
+```powershell
+# 1. Check all PipelineRuns and their overall status:
+kubectl get pipelinerun
+
+# 2. Check the individual TaskRuns created by the PipelineRun:
+kubectl get taskruns -l tekton.dev/pipelineRun=YOUR_PIPELINERUN_NAME
+
+# 3. Locate the active Task Pods:
+kubectl get pods -l tekton.dev/pipelineRun=YOUR_PIPELINERUN_NAME
+
+# 4. Stream live logs from a specific Task Pod:
+kubectl logs -f <pod-name> --all-containers
+```
+
+---
+
+## 18. How to Inspect Test Logs
+
+To inspect the automated test output during or after a run:
+1. Identify the pod running the `test-application` Task:
+   ```powershell
+   kubectl get pods -l tekton.dev/task=test-application
+   ```
+2. View the container log:
+   ```powershell
+   kubectl logs <test-task-pod-name> -c step-run-unit-tests
+   ```
+You will see the output of `node:test` showing all 8 tests passing with execution timings.
+
+---
+
+## 19. How to Verify the Deployed Application
+
+Once the deployment completes, verify the running application:
+
+```powershell
+.\scripts\verify-deployment.ps1 -ExpectedTag "v1"
+```
+
+The script displays:
+- Rollout completion confirmation.
+- Active Pod details.
+- Active container image reference (`.../release-console:v1`).
+- Direct HTTP probe of `/healthz` (status 200).
+- Direct HTTP probe of `/api/info` (showing live version and commit SHA).
+
+### Accessing the Web Application UI
+Open the application in your web browser:
+```
+http://<MINIKUBE_IP>:30080
+```
+*(Run `minikube ip` to obtain your cluster IP, typically `192.168.49.2`).*
+
+> [!TIP]
+> **Windows Port Forwarding Fallback:** If your Windows host firewall restricts access to the Minikube IP, open a separate terminal and run:
+> ```powershell
+> kubectl port-forward svc/release-console-service 3000:3000
+> ```
+> Then open `http://localhost:3000` in your browser.
+
+---
+
+## 20. How to Demonstrate Failure Gating (College Demo)
+
+This demonstration proves to evaluators that tests genuinely guard against bad releases:
+
+### Step 1: Run Successful Release (`v1`)
+Run the pipeline with the clean code and tag `v1`. Confirm that all 4 tasks pass, and `verify-deployment.ps1` shows version `v1` running.
+
+### Step 2: Trigger a Controlled Failing Test
+The patch adds a `-DemoFailTests` switch that sets `DEMO_FORCE_TEST_FAILURE=true` only inside the test Task. The normal test suite remains unchanged when the flag is off. This injects one explicit, deliberate failure so the quality gate can be demonstrated without committing broken application code.
+
+### Step 3: Run Pipeline with a failure-demo tag
+```powershell
+.\scripts\run-pipeline.ps1 `
+  -RepoUrl "https://github.com/YOUR_GITHUB_USERNAME/Tekton-Demo.git" `
+  -DockerHubUsername "YOUR_DOCKERHUB_USERNAME" `
+  -ImageTag "v2-fail-demo" `
+  -DemoFailTests
+```
+
+### Step 5: Observe Quality Gate Halting
+- Task `fetch-source` succeeds.
+- Task `run-tests` **FAILS**.
+- Task `build-and-push-image` is **SKIPPED / NEVER EXECUTED**.
+- Task `deploy-application` is **SKIPPED / NEVER EXECUTED**.
+- Check the running deployment:
+  ```powershell
+  kubectl get deployment release-console -o jsonpath='{.spec.template.spec.containers[0].image}'
+  ```
+  The active image remains `v1`! The production environment was completely protected from the defective build.
+
+### Step 6: Restore the Test
+Revert the change in `test/app.test.js`:
+```powershell
+git checkout -- test/app.test.js
+git commit -am "fix: restore passing unit test"
+git push origin main
+```
+Run `run-pipeline.ps1` with `-ImageTag "v2"`, and observe full green deployment to `v2`.
+
+---
+
+## 21. Troubleshooting Guide
+
+| Issue / Error | Probable Cause | Corrective Action |
+| :--- | :--- | :--- |
+| `dockerhub-auth secret not found` | Secret setup script was not run. | Run `.\scripts\setup-registry-secret.ps1` and supply your Docker Hub PAT. |
+| Kaniko fails with `unauthorized: authentication required` | Invalid Docker Hub token or username mismatch. | Regenerate a Docker Hub PAT with Read & Write permissions and re-run `setup-registry-secret.ps1`. |
+| `minikube ip` connection timed out | Windows Hyper-V / VirtualBox host network routing. | Run `kubectl port-forward svc/release-console-service 3000:3000` and use `http://localhost:3000`. |
+| PipelineRun stuck in `Pending` | Insufficient cluster CPU/RAM or PVC pending. | Check pod events: `kubectl describe pod -l tekton.dev/pipelineRun=<name>`. Ensure Minikube has 3072 MB memory allocated. |
+| `git clone` fails in Task 1 | Repository URL is private or typed incorrectly. | Verify repository visibility is Public on GitHub. |
+
+---
+
+## 22. Safe Cleanup of Project Resources
+
+To clean up resources created specifically for this project without affecting your core Minikube or Tekton installation:
+
+```powershell
+# Remove application deployment and service
+kubectl delete -f k8s/deployment.yaml --ignore-not-found
+kubectl delete -f k8s/service.yaml --ignore-not-found
+
+# Remove PipelineRuns and TaskRuns
+kubectl delete pipelineruns --all
+kubectl delete taskruns --all
+
+# Remove Tekton definitions
+kubectl delete -f tekton/pipeline.yaml --ignore-not-found
+kubectl delete -f tekton/tasks.yaml --ignore-not-found
+kubectl delete -f tekton/rbac.yaml --ignore-not-found
+kubectl delete -f tekton/pvc.yaml --ignore-not-found
+
+# Remove registry secret
+kubectl delete secret dockerhub-auth --ignore-not-found
+```
+
+---
+
+## 23. Limitations and Future Improvements
+
+- **Local Triggering:** Currently initiated via `run-pipeline.ps1`. In a cloud enterprise setup, **Tekton Triggers** (`EventListener` and `TriggerBinding`) combined with a public webhook receiver (or ngrok tunnel) would trigger runs automatically on `git push`.
+- **Ephemeral Storage:** Sequential runs reuse the PVC. In heavy multi-branch enterprise setups, dynamic VolumeClaimTemplates provision dedicated volumes per run.
+- **Image Scanning:** Future iterations can introduce a vulnerability scanning Task (such as Trivy or Grype) between the build and deployment phases.
+
+---
+
+## 24. Interactive Release Resilience Lab and Controlled Failure Demo
+
+The Release Console UI now includes a **Release Resilience Lab** with three clearly labelled what-if scenarios: a healthy candidate, a test failure, and a rollout failure. The evaluator endpoint (`POST /api/release-lab/evaluate`) is a simulation only; it does not run `kubectl` or change the live cluster. The running version shown in the lab is read from the application environment.
+
+For a real pipeline failure-gate demonstration, first commit and push this patch so the pipeline can clone the new files, then run:
+
+```powershell
+.\scripts\run-pipeline.ps1 `
+  -RepoUrl "https://github.com/balaji-devx/Tekton-Demo.git" `
+  -DockerHubUsername "ba1aj1" `
+  -ImageTag "v2-fail-demo" `
+  -DemoFailTests
+```
+
+The test Task fails intentionally, so the image-building and deployment Tasks are not executed. The already-running Deployment remains unchanged. Capture its current image before and after the failure with:
+
+```powershell
+kubectl get deployment release-console -o jsonpath='{.spec.template.spec.containers[0].image}'
+```
+
+Then run a normal release with a **new, unused image tag**, for example `v3`, by omitting `-DemoFailTests`. If a real Deployment rollout fails after the image is built, `deploy-application` attempts `kubectl rollout undo` when a previous Deployment revision exists. The PipelineRun remains failed even if rollback succeeds, making the failure visible rather than reporting a false success.
+
+The rollout-undo path requires the pipeline ServiceAccount's least-privilege Role to read ReplicaSets and patch the Deployment. A first-ever deployment has no previous revision to restore.
+
+---
+
+## 25. Official Technical References
+
+- [Tekton Pipelines Documentation](https://tekton.dev/docs/pipelines/)
+- [Kubernetes Documentation: Deployments](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/)
+- [Minikube Official Handbook](https://minikube.sigs.k8s.io/docs/)
+- [Kaniko Container Engine (GitHub Archive & Reference)](https://github.com/GoogleContainerTools/kaniko)
+- [Node.js Native Test Runner (node:test)](https://nodejs.org/api/test.html)
+
+````
+
+---
+
+## 5. `k8s/deployment.yaml`
 
 **Path:** `k8s/deployment.yaml`  
 **Language:** `yaml`
@@ -228,11 +796,12 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: false
+
 ```
 
 ---
 
-## 5. `k8s/service.yaml`
+## 6. `k8s/service.yaml`
 
 **Path:** `k8s/service.yaml`  
 **Language:** `yaml`
@@ -255,11 +824,39 @@ spec:
       targetPort: 3000
       nodePort: 30080
       protocol: TCP
+
 ```
 
 ---
 
-## 6. `package.json`
+## 7. `package-lock.json`
+
+**Path:** `package-lock.json`  
+**Language:** `json`
+
+```json
+{
+  "name": "release-console",
+  "version": "1.0.0",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "name": "release-console",
+      "version": "1.0.0",
+      "license": "MIT",
+      "engines": {
+        "node": ">=20.0.0"
+      }
+    }
+  }
+}
+
+```
+
+---
+
+## 8. `package.json`
 
 **Path:** `package.json`  
 **Language:** `json`
@@ -288,37 +885,12 @@ spec:
     "node": ">=20.0.0"
   }
 }
+
 ```
 
 ---
 
-## 7. `package-lock.json`
-
-**Path:** `package-lock.json`  
-**Language:** `json`
-
-```json
-{
-  "name": "release-console",
-  "version": "1.0.0",
-  "lockfileVersion": 3,
-  "requires": true,
-  "packages": {
-    "": {
-      "name": "release-console",
-      "version": "1.0.0",
-      "license": "MIT",
-      "engines": {
-        "node": ">=20.0.0"
-      }
-    }
-  }
-}
-```
-
----
-
-## 8. `public/app.js`
+## 9. `public/app.js`
 
 **Path:** `public/app.js`  
 **Language:** `javascript`
@@ -350,6 +922,13 @@ spec:
   const btnRefresh = document.getElementById('btn-refresh');
   const tabInfo = document.getElementById('tab-info');
   const tabHealth = document.getElementById('tab-health');
+  const labScenarioButtons = Array.from(document.querySelectorAll('[data-scenario]'));
+  const labOutcomePanel = document.getElementById('lab-outcome-panel');
+  const labOutcomeTitle = document.getElementById('lab-outcome-title');
+  const labOutcomeSummary = document.getElementById('lab-outcome-summary');
+  const labCurrentVersion = document.getElementById('lab-current-version');
+  const labStageResults = document.getElementById('lab-stage-results');
+  const labEvidence = document.getElementById('lab-evidence');
 
   function updateStatus(state, label) {
     elHeaderDot.className = 'status-dot';
@@ -395,22 +974,29 @@ spec:
       cachedHealth = await healthRes.json();
 
       // Render primary telemetry
-      elVersion.textContent = cachedInfo.version || 'Unknown';
+      if (elVersion) {
+        elVersion.textContent = cachedInfo.version || 'Unknown';
+      }
+      if (labCurrentVersion) {
+        labCurrentVersion.textContent = cachedInfo.version || 'Unknown';
+      }
       
       const commitSha = cachedInfo.commit || 'unknown';
-      elCommit.textContent = commitSha.length > 7 ? commitSha.substring(0, 7) : commitSha;
-      elCommit.title = commitSha;
+      if (elCommit) {
+        elCommit.textContent = commitSha.length > 7 ? commitSha.substring(0, 7) : commitSha;
+        elCommit.title = commitSha;
+      }
 
-      elEnv.textContent = cachedInfo.environment || 'Local';
-      elRuntime.textContent = `Node.js ${cachedInfo.nodeVersion || 'v20'}`;
+      if (elEnv) elEnv.textContent = cachedInfo.environment || 'Local';
+      if (elRuntime) elRuntime.textContent = `Node.js ${cachedInfo.nodeVersion || 'v20'}`;
 
       // Update status indicators
       if (cachedHealth.status === 'ok') {
         updateStatus('healthy', 'Pod Healthy (HTTP 200)');
-        elTerminalStatus.textContent = 'HTTP 200 OK';
+        if (elTerminalStatus) elTerminalStatus.textContent = 'HTTP 200 OK';
       } else {
         updateStatus('error', 'Degraded Health');
-        elTerminalStatus.textContent = 'Degraded';
+        if (elTerminalStatus) elTerminalStatus.textContent = 'Degraded';
       }
 
       renderInspector();
@@ -418,9 +1004,14 @@ spec:
     } catch (err) {
       console.error('[Release Console] Telemetry fetch failure:', err);
       updateStatus('error', 'Endpoint Unreachable');
-      elTerminalStatus.textContent = 'Connection Error';
-      elTerminalContent.textContent = `Error connecting to backend: ${err.message}\nMake sure the Node.js application server or Kubernetes service is reachable.`;
-      elLatency.textContent = '--';
+      if (elTerminalStatus) elTerminalStatus.textContent = 'Connection Error';
+      if (elTerminalContent) {
+        elTerminalContent.textContent = `Error connecting to backend: ${err.message}\nMake sure the Node.js application server or Kubernetes service is reachable.`;
+      }
+      if (elLatency) elLatency.textContent = '--';
+      if (labCurrentVersion && (labCurrentVersion.textContent === 'Loading...' || !labCurrentVersion.textContent)) {
+        labCurrentVersion.textContent = 'Unavailable';
+      }
     }
   }
 
@@ -448,15 +1039,93 @@ spec:
     fetchTelemetry();
   });
 
+  function renderLabResult(result) {
+    if (labOutcomePanel) labOutcomePanel.dataset.outcome = result.outcome;
+    if (labOutcomeTitle) labOutcomeTitle.textContent = result.title;
+    if (labOutcomeSummary) labOutcomeSummary.textContent = result.summary;
+    if (labCurrentVersion) {
+      labCurrentVersion.textContent = result.currentVersion || cachedInfo?.version || 'Unknown';
+    }
+    if (labStageResults) {
+      labStageResults.replaceChildren();
+
+      if (Array.isArray(result.stages)) {
+        result.stages.forEach(function (stage) {
+          const item = document.createElement('li');
+          item.className = 'lab-stage-item';
+
+          const status = document.createElement('span');
+          status.className = `lab-stage-status status-${stage.status}`;
+          status.textContent = (stage.status || 'unknown').replace(/-/g, ' ').toUpperCase();
+
+          const content = document.createElement('div');
+          content.className = 'lab-stage-copy';
+          const title = document.createElement('strong');
+          title.textContent = stage.name;
+          const detail = document.createElement('p');
+          detail.textContent = stage.detail;
+          content.append(title, detail);
+          item.append(status, content);
+          labStageResults.append(item);
+        });
+      }
+    }
+
+    if (labEvidence) {
+      labEvidence.textContent = JSON.stringify(result, null, 2);
+    }
+  }
+
+  async function evaluateReleaseScenario(button) {
+    labScenarioButtons.forEach(function (candidate) {
+      candidate.disabled = true;
+      candidate.setAttribute('aria-busy', 'true');
+    });
+    if (labOutcomeTitle) labOutcomeTitle.textContent = 'Evaluating scenario...';
+    if (labOutcomeSummary) labOutcomeSummary.textContent = 'The local evaluator is calculating the expected pipeline outcome.';
+    if (labOutcomePanel) labOutcomePanel.dataset.outcome = 'pending';
+
+    try {
+      const response = await fetch('/api/release-lab/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scenario: button.dataset.scenario }),
+        cache: 'no-store'
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || `HTTP ${response.status}`);
+      }
+      renderLabResult(result);
+    } catch (error) {
+      if (labOutcomePanel) labOutcomePanel.dataset.outcome = 'error';
+      if (labOutcomeTitle) labOutcomeTitle.textContent = 'Scenario evaluator unavailable';
+      if (labOutcomeSummary) labOutcomeSummary.textContent = error.message;
+      if (labStageResults) labStageResults.replaceChildren();
+      if (labEvidence) labEvidence.textContent = String(error.message);
+    } finally {
+      labScenarioButtons.forEach(function (candidate) {
+        candidate.disabled = false;
+        candidate.removeAttribute('aria-busy');
+      });
+      if (button) button.focus();
+    }
+  }
+
+  labScenarioButtons.forEach(function (button) {
+    button.addEventListener('click', function () { evaluateReleaseScenario(button); });
+  });
+
   // Initial fetch and 15-second polling interval
   fetchTelemetry();
   setInterval(fetchTelemetry, 15000);
 })();
+
 ```
 
 ---
 
-## 9. `public/index.html`
+## 10. `public/index.html`
 
 **Path:** `public/index.html`  
 **Language:** `html`
@@ -469,7 +1138,7 @@ spec:
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Release Console - Production telemetry and deployment verification for local Kubernetes CI/CD pipeline using Tekton and Docker.">
   <title>Release Console — Local Kubernetes CI/CD</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=resilience-lab-2">
 </head>
 <body>
   <div class="shell">
@@ -513,7 +1182,7 @@ spec:
             </div>
           </div>
           <p class="overview-copy">
-            This application is continuously deployed through an automated, non-cloud pipeline executing inside a local Minikube Kubernetes cluster. Every code update is cloned, tested, containerised with Kaniko, published to Docker Hub, and rolled out via Tekton Pipelines.
+            This application is released through a non-cloud CI/CD pipeline on a local Minikube Kubernetes cluster. After a PipelineRun is manually triggered, Tekton clones and tests the source, Kaniko builds and publishes the image, and the deployment Task updates Kubernetes.
           </p>
         </div>
       </section>
@@ -555,6 +1224,47 @@ spec:
             <span class="panel-foot">Alpine Node.js 20 base</span>
           </div>
         </div>
+      </section>
+
+      <!-- Interactive what-if scenarios: these evaluate policy and never mutate Minikube. -->
+      <section class="lab-section" aria-labelledby="lab-heading">
+        <div class="lab-heading-row">
+          <div>
+            <h2 class="section-title" id="lab-heading">Release Resilience Lab</h2>
+            <p class="lab-subtitle">Explore how the pipeline should behave when a release passes or fails.</p>
+          </div>
+          <span class="lab-mode-label">WHAT-IF SIMULATION</span>
+        </div>
+
+        <div class="lab-scenarios" role="group" aria-label="Select release scenario">
+          <button class="lab-scenario-btn" type="button" data-scenario="success">Healthy Candidate</button>
+          <button class="lab-scenario-btn" type="button" data-scenario="test-failure">Test Failure</button>
+          <button class="lab-scenario-btn" type="button" data-scenario="rollout-failure">Rollout Failure</button>
+        </div>
+
+        <div class="lab-result-grid">
+          <section class="lab-result-card lab-outcome-panel" id="lab-outcome-panel" data-outcome="idle" aria-live="polite">
+            <p class="lab-card-eyebrow">Expected pipeline decision</p>
+            <h3 id="lab-outcome-title">Choose a scenario</h3>
+            <p id="lab-outcome-summary" class="lab-outcome-summary">Run a what-if scenario to see the quality gate, deployment decision, and release protection behavior.</p>
+            <div class="lab-current-release">Currently running version <strong id="lab-current-version">Loading...</strong></div>
+            <p class="lab-simulation-note">This lab is a simulation only. It does not create a PipelineRun or change the live Kubernetes Deployment.</p>
+          </section>
+
+          <section class="lab-result-card" aria-labelledby="lab-stages-heading">
+            <div class="lab-card-header">
+              <h3 id="lab-stages-heading">Stage-by-stage evidence</h3>
+              <span class="lab-card-eyebrow">EXPECTED RESULT</span>
+            </div>
+            <ol id="lab-stage-results" class="lab-stage-results">
+              <li class="lab-stage-placeholder">Select one of the scenarios to inspect its expected stages.</li>
+            </ol>
+          </section>
+        </div>
+        <details class="lab-response-details">
+          <summary>View evaluator response</summary>
+          <pre id="lab-evidence" class="lab-evidence">No scenario evaluated yet.</pre>
+        </details>
       </section>
 
       <!-- Two-column Section: Pipeline Workflow & Raw Telemetry Inspector -->
@@ -668,14 +1378,15 @@ spec:
     </footer>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=resilience-lab-2"></script>
 </body>
 </html>
+
 ```
 
 ---
 
-## 10. `public/styles.css`
+## 11. `public/styles.css`
 
 **Path:** `public/styles.css`  
 **Language:** `css`
@@ -1179,553 +1890,251 @@ body {
     gap: 8px;
   }
 }
+
+
+/* Release Resilience Lab */
+.lab-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.lab-heading-row,
+.lab-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.lab-subtitle {
+  margin-top: 5px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.lab-mode-label,
+.lab-card-eyebrow {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.lab-mode-label {
+  border: 1px solid var(--border-muted);
+  background-color: var(--bg-elevated);
+  color: var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.lab-scenarios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.lab-scenario-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--border-muted);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
+  padding: 9px 16px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.lab-scenario-btn:hover:not(:disabled) {
+  background-color: #2B3236;
+  border-color: #3D464A;
+}
+
+.lab-scenario-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-color: var(--accent);
+}
+
+.lab-scenario-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  background-color: var(--bg-elevated);
+  border-color: var(--border-subtle);
+}
+
+.lab-result-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 16px;
+}
+
+.lab-result-card {
+  min-width: 0;
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius-md);
+  background: var(--bg-main);
+  padding: 20px;
+}
+
+.lab-outcome-panel {
+  border-left: 3px solid var(--border-muted);
+}
+
+.lab-outcome-panel[data-outcome="ready"] { border-left-color: var(--status-healthy); }
+.lab-outcome-panel[data-outcome="blocked"] { border-left-color: var(--status-error); }
+.lab-outcome-panel[data-outcome="recovered"] { border-left-color: var(--accent); }
+.lab-outcome-panel[data-outcome="pending"] { border-left-color: var(--status-pending); }
+.lab-outcome-panel[data-outcome="error"] { border-left-color: var(--status-error); }
+
+.lab-result-card h3 {
+  margin: 8px 0 10px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.lab-outcome-summary,
+.lab-stage-copy p,
+.lab-simulation-note {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.lab-current-release {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.lab-current-release strong {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  background-color: var(--bg-elevated);
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-muted);
+  display: inline-block;
+}
+
+.lab-simulation-note {
+  margin-top: 14px;
+  font-size: 11px;
+}
+
+.lab-stage-results {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.lab-stage-item {
+  display: grid;
+  grid-template-columns: 94px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.lab-stage-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-muted);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.05em;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.lab-stage-status.status-passed,
+.lab-stage-status.status-ready,
+.lab-stage-status.status-restored {
+  color: var(--status-healthy);
+  border-color: rgba(142, 219, 125, 0.35);
+  background-color: rgba(142, 219, 125, 0.08);
+}
+
+.lab-stage-status.status-failed {
+  color: var(--status-error);
+  border-color: rgba(229, 115, 115, 0.35);
+  background-color: rgba(229, 115, 115, 0.08);
+}
+
+.lab-stage-status.status-blocked,
+.lab-stage-status.status-skipped {
+  color: var(--status-pending);
+  border-color: rgba(224, 194, 102, 0.35);
+  background-color: rgba(224, 194, 102, 0.08);
+}
+
+.lab-stage-copy strong {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.lab-stage-copy p { font-size: 12px; }
+.lab-stage-placeholder { color: var(--text-muted); font-size: 13px; }
+
+.lab-response-details {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 12px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.lab-response-details summary { cursor: pointer; }
+.lab-evidence {
+  margin-top: 10px;
+  padding: 14px;
+  background: var(--bg-terminal);
+  color: var(--text-primary);
+  font: 11px/1.5 var(--font-mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 260px;
+  overflow: auto;
+}
+
+@media (max-width: 900px) {
+  .lab-result-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .lab-section { padding: 16px; }
+  .lab-heading-row { flex-direction: column; }
+  .lab-mode-label { align-self: flex-start; }
+  .lab-stage-item { grid-template-columns: 80px minmax(0, 1fr); gap: 8px; }
+}
+
 ```
-
----
-
-## 11. `README.md`
-
-**Path:** `README.md`  
-**Language:** `markdown`
-
-````markdown
-# Design and Implementation of a Non-Cloud CI/CD Pipeline Using Tekton, Docker and Kubernetes
-
-## 1. Project Title and Objective
-
-**Title:** Design and Implementation of a Non-Cloud CI/CD Pipeline Using Tekton, Docker and Kubernetes  
-**Project Application:** Release Console  
-**Domain:** DevOps, Cloud-Native Engineering, Container Orchestration  
-
-The primary objective of this project is to design, implement, and demonstrate a completely functional, local Kubernetes-native Continuous Integration and Continuous Deployment (CI/CD) pipeline running on **Minikube** without reliance on managed cloud infrastructure (e.g., AWS, GCP, Azure). 
-
-Using **Tekton Pipelines**, **Docker**, and **Kubernetes**, this project automates the entire software delivery lifecycle:
-1. Cloning source code directly from a public Git repository upon developer commit.
-2. Executing automated unit test suites within containerised quality gates.
-3. Building a container image in-cluster using the daemonless **Kaniko** container builder.
-4. Publishing the versioned image to **Docker Hub**.
-5. Performing an automated rolling deployment to the local Kubernetes cluster.
-6. Validating operational health and telemetry through a live application: **Release Console**.
-
----
-
-## 2. The Problem Being Addressed
-
-Modern DevOps coursework and enterprise systems frequently rely on proprietary managed cloud services (such as AWS CodePipeline, GitHub Actions hosted runners, or Google Cloud Build). While powerful, these approaches introduce critical challenges:
-- **Cloud Dependency & Cost:** Substantial ongoing recurring costs for cloud compute, managed Kubernetes clusters (EKS/GKE), and external network ingress/egress.
-- **Opacity of In-Cluster Execution:** Developers treat CI/CD as an external "black box" without understanding Kubernetes-native primitives, controllers, or Custom Resource Definitions (CRDs).
-- **Resource Constraints on Local Machines:** Running heavy enterprise toolchains (Jenkins, GitLab CI, heavy databases) on developer laptops with ~8 GB RAM frequently results in system thrashing and crashes.
-
-**Solution:** This project demonstrates that a fully standard, Kubernetes-native CI/CD architecture can be executed locally on a single developer workstation using open standards (Tekton, OCI containers, native Node.js), keeping memory utilization under 3 GB while providing enterprise-grade gating, versioning, and zero-downtime rolling updates.
-
----
-
-## 3. Explanation of CI, CD and the Role of Tekton
-
-| Concept | Definition & Project Implementation |
-| :--- | :--- |
-| **Continuous Integration (CI)** | The automated practice of validating software changes as soon as they are committed. In this project, Tekton checks out source code into an ephemeral workspace, triggers clean dependency installation (`npm ci`), and runs `node:test` unit tests. If any test fails, CI halts immediately. |
-| **Continuous Deployment (CD)** | The automated mechanism by which tested code is packaged into an immutable container artifact, published to a registry, and rolled out to Kubernetes. Tekton invokes Kaniko to build the OCI container, tags it semantically (`v1`, `v2`), pushes it to Docker Hub, and applies rolling updates to the cluster. |
-| **Tekton Pipelines** | A Cloud Native Computing Foundation (CNCF) open-source framework for creating cloud-native CI/CD systems on top of Kubernetes. Unlike traditional CI servers that run as external VMs, Tekton runs natively as Kubernetes Custom Resource Definitions (CRDs). Each Task executes in its own isolated Kubernetes Pod, utilizing Kubernetes scheduling, RBAC, and storage primitives. |
-
----
-
-## 4. System Architecture
-
-The following diagram illustrates the architecture and separation of concerns:
-
-```
-[ Developer Workstation ]
-        │
-        ▼ (git push)
-[ GitHub Repository ] (External Source Control)
-        │
-        │ (Cloned via alpine/git)
-        ▼
-╔═══════════════════════════════════════════════════════════════════╗
-║            LOCAL KUBERNETES CLUSTER (Minikube on Docker)          ║
-║                                                                   ║
-║  ┌─────────────────────────────────────────────────────────────┐  ║
-║  │                  Tekton Pipeline Engine                     │  ║
-║  │                                                             │  ║
-║  │  [Task 1: clone-source] ───► Captures Git Commit SHA        │  ║
-║  │            │                                                │  ║
-║  │            ▼                                                │  ║
-║  │  [Task 2: test-application] ──► Automated Quality Gate      │  ║
-║  │            │                    (Blocks pipeline on error)  │  ║
-║  │            ▼                                                │  ║
-║  │  [Task 3: build-and-push]   ──► Kaniko In-Cluster Build     │  ║
-║  │            │                    (Uses dockerhub-auth secret)│  ║
-║  │            ▼                                                │  ║
-║  │  [Task 4: deploy-app]       ──► Rollout & Status Verify     │  ║
-║  └─────────────────────────────────────────────────────────────┘  ║
-║            │                                                      ║
-║            │ Shared Workspace PVC (release-console-pvc)           ║
-║            ▼                                                      ║
-║  ┌─────────────────────────────────────────────────────────────┐  ║
-║  │                Application Runtime                          │  ║
-║  │                                                             │  ║
-║  │   Deployment: release-console (1 Pod, Port 3000)            │  ║
-║  │   Service: release-console-service (NodePort 30080)         │  ║
-║  │   Health Probe: /healthz | Telemetry: /api/info             │  ║
-║  └─────────────────────────────────────────────────────────────┘  ║
-╚═══════════════════════════════════════════════════════════════════╝
-        ▲                                │
-        │ (Kubernetes Secret Auth)       │ (Docker Image Push)
-        │                                ▼
-[ Docker Hub Container Registry ] (External OCI Registry)
-```
-
----
-
-## 5. Complete Workflow Step-by-Step
-
-```
-1. Developer edits code & pushes to GitHub
-         │
-         ▼
-2. Launch PipelineRun (`run-pipeline.ps1`)
-         │
-         ▼
-3. Task: clone-source
-   └── Clones repo into shared PVC Workspace
-   └── Emits commit SHA as result
-         │
-         ▼
-4. Task: test-application
-   └── Runs `npm ci` and `node --test test/app.test.js`
-   └── [Gate]: If tests FAIL ──► PIPELINE HALTS (No build or deployment)
-   └── If tests PASS ──────────► Proceed to build
-         │
-         ▼
-5. Task: build-and-push-image
-   └── Kaniko executor builds Dockerfile inside Pod
-   └── Injects APP_VERSION and GIT_COMMIT build arguments
-   └── Authenticates via `dockerhub-auth` Secret
-   └── Pushes `username/release-console:<tag>` to Docker Hub
-         │
-         ▼
-6. Task: deploy-application
-   └── Updates Kubernetes Deployment manifest with new image tag
-   └── Applies Deployment and NodePort Service
-   └── Executes `kubectl rollout status` (waits for pod readiness)
-         │
-         ▼
-7. Verification & Health Monitoring
-   └── Developer runs `verify-deployment.ps1`
-   └── Browser visits `http://<minikube-ip>:30080`
-   └── Release Console UI displays live running version, commit SHA, and health state
-```
-
----
-
-## 6. Technology Stack and Responsibilities
-
-| Technology | Version | Role in Architecture |
-| :--- | :--- | :--- |
-| **Node.js** | 20.x (Alpine) | Application runtime and HTTP server built exclusively with native modules (`node:http`, `node:fs`, `node:path`). |
-| **Node Test Runner** | Native `node:test` | Automated unit testing framework executed during the CI quality gate without external npm dependencies. |
-| **HTML5 / CSS3 / JS** | Vanilla standards | Frontend for **Release Console** using an intentional dark aesthetic without heavy frontend frameworks. |
-| **Git & GitHub** | Git 2.50+ | Distributed version control and remote source repository for Tekton clones. |
-| **Docker Engine** | 29.6+ | Container runtime backing Minikube through the `desktop-linux` context. |
-| **Docker Hub** | OCI Registry | Remote public container registry storing versioned application images. |
-| **Minikube** | 1.39+ | Local Kubernetes cluster running on Windows 10 with Docker driver. |
-| **Kubernetes (kubectl)** | v1.36+ / v1.37+ | Container orchestrator managing Deployment, Service, PVC, RBAC, and Secrets. |
-| **Tekton Pipelines** | v1 API | Kubernetes-native CI/CD controller and CRDs executing pipeline workflows. |
-| **Kaniko** | `v1.28.6` (martizih) | Maintained in-cluster container builder compiling Dockerfiles daemonless without host socket mounts. |
-| **PowerShell** | 5.1+ / 7.x | Automation scripts for prerequisite checks, secret setup, and deployment validation. |
-
----
-
-## 7. Project Structure
-
-```
-release-console-tekton/
-│
-├── src/
-│   └── index.js                   # Application server (native HTTP, static files, health API)
-│
-├── public/
-│   ├── index.html                 # Semantic HTML5 UI for Release Console
-│   ├── styles.css                 # Dark, restrained stylesheet (strictly no pills or fake charts)
-│   └── app.js                     # Client-side telemetry polling and terminal inspector
-│
-├── test/
-│   └── app.test.js                # 8 comprehensive automated unit tests using node:test
-│
-├── k8s/
-│   ├── deployment.yaml            # Kubernetes Deployment (1 replica, probes, securityContext)
-│   └── service.yaml               # Kubernetes NodePort Service (Port 3000 -> NodePort 30080)
-│
-├── tekton/
-│   ├── pvc.yaml                   # PersistentVolumeClaim (500Mi) for shared pipeline workspace
-│   ├── rbac.yaml                  # Least-privilege ServiceAccount, Role, and RoleBinding
-│   ├── tasks.yaml                 # 4 Tekton Tasks (clone, test, build/push, deploy)
-│   ├── pipeline.yaml              # Sequential Pipeline linking tasks with quality gates
-│   └── pipelinerun-template.yaml  # PipelineRun invocation template
-│
-├── scripts/
-│   ├── check-prerequisites.ps1    # Non-destructive environment and tool audit
-│   ├── setup-registry-secret.ps1  # Secure Docker Hub credentials configuration
-│   ├── validate-project.ps1       # Local syntax validation and unit test execution
-│   ├── run-pipeline.ps1           # PipelineRun generator and execution trigger
-│   └── verify-deployment.ps1      # Post-deployment rollout and live HTTP verification
-│
-├── package.json                   # Project manifest (test & start scripts)
-├── package-lock.json              # Deterministic dependency lockfile
-├── Dockerfile                     # Multi-stage production container build (non-root)
-├── .dockerignore                  # Build context exclusions
-├── .gitignore                     # Git tracking exclusions
-└── README.md                      # Comprehensive project documentation
-```
-
----
-
-## 8. Prerequisites
-
-To execute this project, your Windows workstation must have:
-- **Windows 10/11 Pro or Enterprise** (Build 22H2 recommended).
-- **Physical Memory:** Minimum 8 GB RAM (Minikube uses 3 GB).
-- **Docker Desktop:** Running and configured with the `desktop-linux` context.
-- **Git for Windows:** Installed and accessible via PowerShell.
-- **Minikube & kubectl:** Installed and in your system `%PATH%`.
-- **A Docker Hub Account:** Free personal account at [hub.docker.com](https://hub.docker.com/).
-- **A GitHub Account:** For hosting your repository fork/copy publicly.
-
----
-
-## 9. Environment-Specific Information (Windows, Docker Desktop, Minikube)
-
-Your existing environment parameters:
-- **Cluster driver:** Docker (`minikube start --driver=docker`)
-- **Resource Allocation:** 2 CPUs, 3072 MB RAM, 20 GB disk
-- **Active kubectl context:** `minikube`
-- **Kubernetes Node status:** Ready
-- **Tekton Pipelines controller, webhook & events controller:** Verified as Running in `tekton-pipelines` namespace.
-
-> [!IMPORTANT]
-> The scripts and manifests in this project are strictly designed to run within your existing cluster without resetting Minikube or reinstalling Tekton.
-
----
-
-## 10. Docker Hub Repository Preparation
-
-1. Log into your account at [hub.docker.com](https://hub.docker.com/).
-2. Click **Create Repository**.
-3. Set the Repository Name to: `release-console`.
-4. Set the Visibility to **Public**.
-   - *Why Public?* Keeping the demonstration repository public allows Minikube's kubelet to pull the newly built image cleanly on any node without needing cluster-wide image pull credentials.
-5. Generate a **Personal Access Token (PAT)**:
-   - Navigate to **Account Settings** -> **Security** -> **New Access Token**.
-   - Token Description: `tekton-local-pipeline`.
-   - Access Permissions: **Read & Write**.
-   - Copy the generated token for use in the setup script.
-
----
-
-## 11. GitHub Repository Setup and Push Commands
-
-Because Tekton's `clone-source` task clones from source control, create a public GitHub repository for your project:
-
-1. Create a new public repository on GitHub named `Tekton-Demo` (or `release-console`).
-2. Run the following commands in Windows PowerShell from the project root:
-
-```powershell
-# Navigate to the workspace root
-cd "e:\SEM 3\DEVOPS\Tekton-Demo"
-
-# Initialize local git repository (if not already initialized)
-git init -b main
-
-# Stage all files
-git add .
-
-# Create the initial commit
-git commit -m "feat: initial commit of Release Console and Tekton CI/CD pipeline"
-
-# Add your GitHub repository remote (replace with your actual username/repo)
-git remote add origin https://github.com/YOUR_GITHUB_USERNAME/Tekton-Demo.git
-
-# Push main branch to GitHub
-git push -u origin main
-```
-
-When you make modifications to the application later (such as during version updates or failure testing), commit and push them with:
-```powershell
-git add .
-git commit -m "chore: release update v2"
-git push origin main
-```
-
----
-
-## 12. Registry Secret Setup
-
-Run the provided secure PowerShell script to configure your credentials inside Kubernetes:
-
-```powershell
-.\scripts\setup-registry-secret.ps1
-```
-
-**How it works:**
-- It prompts for your Docker Hub username.
-- It prompts for your Docker Hub Access Token securely (`Read-Host -AsSecureString`), ensuring the token is never displayed or echoed.
-- It creates a standard Docker authentication JSON payload in memory.
-- It applies a Kubernetes Secret named `dockerhub-auth` in namespace `default` containing both `config.json` (used by Kaniko) and `.dockerconfigjson` (standard Kubernetes).
-- It removes any temporary files immediately upon completion.
-
----
-
-## 13. Deep Dive: Tekton Tasks, Pipeline, Workspaces, and Kaniko
-
-### PersistentVolumeClaim Workspace (`tekton/pvc.yaml`)
-A single `500Mi` volume (`release-console-pvc`) is provisioned using Minikube's `standard` StorageClass. This shared volume persists across sequential Tasks in a PipelineRun, allowing `clone-source` to write the files that `test-application`, `build-and-push-image`, and `deploy-application` subsequently access.
-
-### Tekton Tasks (`tekton/tasks.yaml`)
-1. **`clone-source`**:
-   - Runs `alpine/git:v2.45.2`.
-   - Clones the target GitHub repository into `$(workspaces.source.path)/release-console`.
-   - Runs `git rev-parse HEAD` and writes the resulting commit SHA to `$(results.commit.path)`.
-2. **`test-application`**:
-   - Runs `node:20-alpine`.
-   - Navigates into the workspace and executes `npm ci` followed by `npm test`.
-   - Emits structured execution logs. Halts with exit code 1 if any test fails.
-3. **`build-and-push-image` (Kaniko)**:
-   - Runs `martizih/kaniko:v1.28.6` (maintained community fork by mzihlmann/osscontainertools).
-   - Drop-in continuation of Kaniko supporting up-to-date dependencies and vulnerability patches for daemonless in-cluster builds without requiring Docker daemon privileges.
-   - Mounts the `dockerhub-auth` secret at `/kaniko/.docker` to read credentials.
-   - Compiles the Dockerfile using the shared workspace context and pushes `docker.io/<username>/release-console:<tag>` to Docker Hub.
-4. **`deploy-application`**:
-   - Runs `alpine/k8s:1.37.0` (Kubernetes v1.37 compatible toolbox containing `sh`, `sed`, and `kubectl`).
-   - Templates `k8s/deployment.yaml` with the exact image tag and Git commit SHA.
-   - Applies the Deployment and Service manifests.
-   - Executes `kubectl rollout status deployment/release-console --timeout=120s` to block until the new pod is healthy.
-
-### Pipeline Sequencing (`tekton/pipeline.yaml`)
-The pipeline enforces sequential execution using `runAfter`:
-- `run-tests` specifies `runAfter: [fetch-source]`
-- `build-push` specifies `runAfter: [run-tests]`
-- `deploy` specifies `runAfter: [build-push]`
-
----
-
-## 14. How the Dockerfile Builds the Container
-
-The application's `Dockerfile` follows enterprise containerisation best practices:
-- **Base Image:** `node:20-alpine` (ultra-lightweight footprint, ~50 MB).
-- **Layer Caching:** Copies `package.json` and `package-lock.json` first, executing `npm ci --only=production` before copying source code.
-- **Build Arguments:** Accepts `APP_VERSION` and `GIT_COMMIT` dynamically from Kaniko, setting them as runtime environment variables.
-- **Security:** Switches to the unprivileged built-in `node` user (`USER node`, UID 1000) to prevent container escape vulnerabilities.
-- **Port:** Exposes internal HTTP port 3000.
-
----
-
-## 15. Kubernetes Deployment and NodePort Service
-
-- **Deployment (`k8s/deployment.yaml`):**
-  - Replicas: 1
-  - Resource Requests: 50m CPU, 64Mi Memory (extremely lightweight for laptop).
-  - Resource Limits: 200m CPU, 128Mi Memory.
-  - Health Probes: HTTP probes on `/healthz` for both liveness (period 10s) and readiness (period 5s).
-  - Security Context: `runAsNonRoot: true`, `runAsUser: 1000`.
-- **Service (`k8s/service.yaml`):**
-  - Type: `NodePort`
-  - Targets container port 3000.
-  - Exposes fixed **NodePort 30080** on the Minikube cluster IP.
-
----
-
-## 16. How to Launch the Complete Pipeline
-
-Run the automated orchestrator script:
-
-```powershell
-.\scripts\run-pipeline.ps1 `
-  -RepoUrl "https://github.com/YOUR_GITHUB_USERNAME/Tekton-Demo.git" `
-  -DockerHubUsername "YOUR_DOCKERHUB_USERNAME" `
-  -ImageTag "v1"
-```
-
-The script will:
-1. Verify the current kubectl context is `minikube`.
-2. Ensure the `dockerhub-auth` secret exists.
-3. Declaratively apply `tekton/pvc.yaml`, `tekton/rbac.yaml`, `tekton/tasks.yaml`, and `tekton/pipeline.yaml`.
-4. Generate a timestamped PipelineRun manifest (e.g. `release-console-run-v1-20261025-183000`).
-5. Submit the PipelineRun to Kubernetes.
-
----
-
-## 17. How to Monitor TaskRuns and PipelineRuns
-
-Inspect the status of your running pipeline:
-
-```powershell
-# 1. Check all PipelineRuns and their overall status:
-kubectl get pipelinerun
-
-# 2. Check the individual TaskRuns created by the PipelineRun:
-kubectl get taskruns -l tekton.dev/pipelineRun=YOUR_PIPELINERUN_NAME
-
-# 3. Locate the active Task Pods:
-kubectl get pods -l tekton.dev/pipelineRun=YOUR_PIPELINERUN_NAME
-
-# 4. Stream live logs from a specific Task Pod:
-kubectl logs -f <pod-name> --all-containers
-```
-
----
-
-## 18. How to Inspect Test Logs
-
-To inspect the automated test output during or after a run:
-1. Identify the pod running the `test-application` Task:
-   ```powershell
-   kubectl get pods -l tekton.dev/task=test-application
-   ```
-2. View the container log:
-   ```powershell
-   kubectl logs <test-task-pod-name> -c step-run-unit-tests
-   ```
-You will see the output of `node:test` showing all 8 tests passing with execution timings.
-
----
-
-## 19. How to Verify the Deployed Application
-
-Once the deployment completes, verify the running application:
-
-```powershell
-.\scripts\verify-deployment.ps1 -ExpectedTag "v1"
-```
-
-The script displays:
-- Rollout completion confirmation.
-- Active Pod details.
-- Active container image reference (`.../release-console:v1`).
-- Direct HTTP probe of `/healthz` (status 200).
-- Direct HTTP probe of `/api/info` (showing live version and commit SHA).
-
-### Accessing the Web Application UI
-Open the application in your web browser:
-```
-http://<MINIKUBE_IP>:30080
-```
-*(Run `minikube ip` to obtain your cluster IP, typically `192.168.49.2`).*
-
-> [!TIP]
-> **Windows Port Forwarding Fallback:** If your Windows host firewall restricts access to the Minikube IP, open a separate terminal and run:
-> ```powershell
-> kubectl port-forward svc/release-console-service 3000:3000
-> ```
-> Then open `http://localhost:3000` in your browser.
-
----
-
-## 20. How to Demonstrate Failure Gating (College Demo)
-
-This demonstration proves to evaluators that tests genuinely guard against bad releases:
-
-### Step 1: Run Successful Release (`v1`)
-Run the pipeline with the clean code and tag `v1`. Confirm that all 4 tasks pass, and `verify-deployment.ps1` shows version `v1` running.
-
-### Step 2: Introduce an Intentional Test Failure
-In `test/app.test.js`, edit line 70 to make an assertion deliberately fail:
-```javascript
-// Change:
-assert.equal(res.statusCode, 200);
-// To:
-assert.equal(res.statusCode, 500); // Intentionally broken test
-```
-
-### Step 3: Push the Broken Test
-```powershell
-git commit -am "test: introduce intentional failing test for gate demonstration"
-git push origin main
-```
-
-### Step 4: Run Pipeline with Tag `v2`
-```powershell
-.\scripts\run-pipeline.ps1 `
-  -RepoUrl "https://github.com/YOUR_GITHUB_USERNAME/Tekton-Demo.git" `
-  -DockerHubUsername "YOUR_DOCKERHUB_USERNAME" `
-  -ImageTag "v2"
-```
-
-### Step 5: Observe Quality Gate Halting
-- Task `fetch-source` succeeds.
-- Task `run-tests` **FAILS**.
-- Task `build-and-push-image` is **SKIPPED / NEVER EXECUTED**.
-- Task `deploy-application` is **SKIPPED / NEVER EXECUTED**.
-- Check the running deployment:
-  ```powershell
-  kubectl get deployment release-console -o jsonpath='{.spec.template.spec.containers[0].image}'
-  ```
-  The active image remains `v1`! The production environment was completely protected from the defective build.
-
-### Step 6: Restore the Test
-Revert the change in `test/app.test.js`:
-```powershell
-git checkout -- test/app.test.js
-git commit -am "fix: restore passing unit test"
-git push origin main
-```
-Run `run-pipeline.ps1` with `-ImageTag "v2"`, and observe full green deployment to `v2`.
-
----
-
-## 21. Troubleshooting Guide
-
-| Issue / Error | Probable Cause | Corrective Action |
-| :--- | :--- | :--- |
-| `dockerhub-auth secret not found` | Secret setup script was not run. | Run `.\scripts\setup-registry-secret.ps1` and supply your Docker Hub PAT. |
-| Kaniko fails with `unauthorized: authentication required` | Invalid Docker Hub token or username mismatch. | Regenerate a Docker Hub PAT with Read & Write permissions and re-run `setup-registry-secret.ps1`. |
-| `minikube ip` connection timed out | Windows Hyper-V / VirtualBox host network routing. | Run `kubectl port-forward svc/release-console-service 3000:3000` and use `http://localhost:3000`. |
-| PipelineRun stuck in `Pending` | Insufficient cluster CPU/RAM or PVC pending. | Check pod events: `kubectl describe pod -l tekton.dev/pipelineRun=<name>`. Ensure Minikube has 3072 MB memory allocated. |
-| `git clone` fails in Task 1 | Repository URL is private or typed incorrectly. | Verify repository visibility is Public on GitHub. |
-
----
-
-## 22. Safe Cleanup of Project Resources
-
-To clean up resources created specifically for this project without affecting your core Minikube or Tekton installation:
-
-```powershell
-# Remove application deployment and service
-kubectl delete -f k8s/deployment.yaml --ignore-not-found
-kubectl delete -f k8s/service.yaml --ignore-not-found
-
-# Remove PipelineRuns and TaskRuns
-kubectl delete pipelineruns --all
-kubectl delete taskruns --all
-
-# Remove Tekton definitions
-kubectl delete -f tekton/pipeline.yaml --ignore-not-found
-kubectl delete -f tekton/tasks.yaml --ignore-not-found
-kubectl delete -f tekton/rbac.yaml --ignore-not-found
-kubectl delete -f tekton/pvc.yaml --ignore-not-found
-
-# Remove registry secret
-kubectl delete secret dockerhub-auth --ignore-not-found
-```
-
----
-
-## 23. Limitations and Future Improvements
-
-- **Local Triggering:** Currently initiated via `run-pipeline.ps1`. In a cloud enterprise setup, **Tekton Triggers** (`EventListener` and `TriggerBinding`) combined with a public webhook receiver (or ngrok tunnel) would trigger runs automatically on `git push`.
-- **Ephemeral Storage:** Sequential runs reuse the PVC. In heavy multi-branch enterprise setups, dynamic VolumeClaimTemplates provision dedicated volumes per run.
-- **Image Scanning:** Future iterations can introduce a vulnerability scanning Task (such as Trivy or Grype) between the build and deployment phases.
-
----
-
-## 24. Official Technical References
-
-- [Tekton Pipelines Documentation](https://tekton.dev/docs/pipelines/)
-- [Kubernetes Documentation: Deployments](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/)
-- [Minikube Official Handbook](https://minikube.sigs.k8s.io/docs/)
-- [Kaniko Container Engine (GitHub Archive & Reference)](https://github.com/GoogleContainerTools/kaniko)
-- [Node.js Native Test Runner (node:test)](https://nodejs.org/api/test.html)
-````
 
 ---
 
@@ -1823,6 +2232,7 @@ kubectl get pods -n default -l app=release-console
 
 Write-Host "`nOpen http://localhost:3001 and press Ctrl+F5." -ForegroundColor Green
 kubectl port-forward service/release-console-service 3001:3000 -n default
+
 ```
 
 ---
@@ -1963,6 +2373,7 @@ try {
 Write-Host "`n==========================================================" -ForegroundColor Cyan
 Write-Host " Audit Complete: $passedChecks of $totalChecks checks verified." -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
+
 ```
 
 ---
@@ -1981,6 +2392,7 @@ Write-Host "==========================================================" -Foregro
     named PipelineRun with specified image tag, and outputs diagnostic monitoring commands.
 .EXAMPLE
     .\scripts\run-pipeline.ps1 -RepoUrl "https://github.com/myuser/Tekton-Demo.git" -DockerHubUsername "myuser" -ImageTag "v1"
+    .\scripts\run-pipeline.ps1 -RepoUrl "https://github.com/myuser/Tekton-Demo.git" -DockerHubUsername "myuser" -ImageTag "v2-fail-demo" -DemoFailTests
 #>
 
 [CmdletBinding()]
@@ -1998,7 +2410,10 @@ param(
     [string]$Revision = "main",
 
     [Parameter(Mandatory = $false)]
-    [string]$Namespace = "default"
+    [string]$Namespace = "default",
+
+    [Parameter(Mandatory = $false, HelpMessage = "Inject one intentional failing test to demonstrate failure gating")]
+    [switch]$DemoFailTests
 )
 
 $ErrorActionPreference = "Stop"
@@ -2011,6 +2426,8 @@ Write-Host "Git Revision:      $Revision" -ForegroundColor Gray
 Write-Host "Docker Hub User:   $DockerHubUsername" -ForegroundColor Gray
 Write-Host "Target Image Tag:  $ImageTag" -ForegroundColor Gray
 Write-Host "Namespace:         $Namespace" -ForegroundColor Gray
+$demoFailTestsValue = if ($DemoFailTests) { "true" } else { "false" }
+Write-Host "Injected test failure: $demoFailTestsValue" -ForegroundColor Gray
 Write-Host ""
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
@@ -2071,6 +2488,8 @@ spec:
       value: "$DockerHubUsername"
     - name: image-tag
       value: "$ImageTag"
+    - name: demo-fail-tests
+      value: "$demoFailTestsValue"
   workspaces:
     - name: shared-workspace
       persistentVolumeClaim:
@@ -2110,6 +2529,7 @@ try {
         Remove-Item -Path $tempRunFile -Force -ErrorAction SilentlyContinue
     }
 }
+
 ```
 
 ---
@@ -2250,6 +2670,7 @@ try {
 }
 
 Write-Host "==========================================================" -ForegroundColor Cyan
+
 ```
 
 ---
@@ -2413,6 +2834,7 @@ if ($failures -eq 0) {
     Write-Host "==========================================================" -ForegroundColor Cyan
     exit 1
 }
+
 ```
 
 ---
@@ -2586,6 +3008,7 @@ Write-Host "`n==========================================================" -Foreg
 Write-Host " Verification Check Complete." -ForegroundColor Cyan
 Write-Host " Open $serviceUrl in your browser to view the Release Console." -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
+
 ```
 
 ---
@@ -2655,6 +3078,103 @@ function sendJson(res, statusCode, data) {
 }
 
 /**
+ * Evaluates a release scenario for the UI's educational resilience lab.
+ * This endpoint never invokes kubectl and never changes the live deployment.
+ */
+const RELEASE_LAB_SCENARIOS = Object.freeze({
+  success: {
+    outcome: 'ready',
+    title: 'Quality gates passed — candidate ready',
+    summary: 'Source checkout succeeds, tests pass, image build and publishing succeed, and deployment completes. (Simulation only: does not run real Tekton Tasks or change the real cluster).',
+    priorVersionPreserved: false,
+    stages: [
+      { name: 'Unit tests', status: 'passed', detail: 'Automated test suite passed clean quality gate.' },
+      { name: 'Build and publish image', status: 'passed', detail: 'Kaniko builds and publishes the versioned container image to Docker Hub.' },
+      { name: 'Kubernetes rollout', status: 'ready', detail: 'Rolling update deployment completes and pod readiness probes verify health.' }
+    ]
+  },
+  'test-failure': {
+    outcome: 'blocked',
+    title: 'Candidate blocked at test gate',
+    summary: 'Source checkout succeeds, tests fail, image creation and deployment are blocked, and the existing deployment remains unchanged.',
+    priorVersionPreserved: true,
+    stages: [
+      { name: 'Unit tests', status: 'failed', detail: 'A regression was detected by the test suite; pipeline halts immediately.' },
+      { name: 'Build and publish image', status: 'blocked', detail: 'Blocked because the test Task failed; Kaniko image build never runs.' },
+      { name: 'Kubernetes rollout', status: 'skipped', detail: 'Skipped; currently deployed cluster version remains completely untouched.' }
+    ]
+  },
+  'rollout-failure': {
+    outcome: 'recovered',
+    title: 'Failed rollout — rollback recovery attempted',
+    summary: 'Tests and image build succeed, the new rollout fails, and Kubernetes attempts to restore the previous Deployment revision if one is available. Recovery itself can fail if no prior revision exists. The pipeline reports failure.',
+    priorVersionPreserved: true,
+    stages: [
+      { name: 'Unit tests', status: 'passed', detail: 'Candidate passed the automated test gate.' },
+      { name: 'Build and publish image', status: 'passed', detail: 'Candidate container image was built and published to Docker Hub.' },
+      { name: 'Kubernetes rollout', status: 'failed', detail: 'Candidate pod failed readiness probes or rollout timed out.' },
+      { name: 'Rollback', status: 'restored', detail: 'Kubernetes attempts rollout undo to restore prior revision if available; recovery can fail if no prior revision exists.' }
+    ]
+  }
+});
+
+function handleReleaseLabRequest(req, res) {
+  const chunks = [];
+  const maxBodyBytes = 8192;
+  let bodyBytes = 0;
+  let tooLarge = false;
+
+  req.on('data', (chunk) => {
+    bodyBytes += chunk.length;
+    if (bodyBytes > maxBodyBytes) {
+      tooLarge = true;
+      return;
+    }
+    chunks.push(chunk);
+  });
+
+  req.on('end', () => {
+    if (tooLarge) {
+      return sendJson(res, 413, { error: 'Request body too large', code: 413 });
+    }
+
+    let payload;
+    try {
+      payload = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}');
+    } catch (_) {
+      return sendJson(res, 400, { error: 'Invalid JSON body', code: 400 });
+    }
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+      return sendJson(res, 400, { error: 'JSON body must be an object', code: 400 });
+    }
+
+    const scenario = Object.hasOwn(RELEASE_LAB_SCENARIOS, payload.scenario)
+      ? RELEASE_LAB_SCENARIOS[payload.scenario]
+      : null;
+    if (!scenario) {
+      return sendJson(res, 400, {
+        error: 'Unknown scenario. Use success, test-failure, or rollout-failure.',
+        code: 400
+      });
+    }
+
+    return sendJson(res, 200, {
+      service: 'release-console',
+      simulationOnly: true,
+      liveClusterChanged: false,
+      scenario: payload.scenario,
+      currentVersion: process.env.APP_VERSION || 'dev-local',
+      currentCommit: process.env.GIT_COMMIT || 'local-dev-commit',
+      priorVersionPreserved: scenario.priorVersionPreserved,
+      outcome: scenario.outcome,
+      title: scenario.title,
+      summary: scenario.summary,
+      stages: scenario.stages
+    });
+  });
+}
+
+/**
  * Handles incoming HTTP requests for Release Console.
  * @param {http.IncomingMessage} req 
  * @param {http.ServerResponse} res 
@@ -2664,7 +3184,20 @@ function requestHandler(req, res) {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     const pathname = url.pathname;
 
-    // Only GET and HEAD methods are supported
+    // Interactive what-if evaluator; deliberately separate from live cluster control.
+    if (pathname === '/api/release-lab/evaluate') {
+      if (req.method !== 'POST') {
+        res.writeHead(405, {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Allow': 'POST',
+          'X-Content-Type-Options': 'nosniff'
+        });
+        return res.end(JSON.stringify({ error: 'Method Not Allowed', code: 405 }));
+      }
+      return handleReleaseLabRequest(req, res);
+    }
+
+    // Ordinary application routes are read-only and accept GET/HEAD only.
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       res.writeHead(405, { 'Content-Type': 'application/json; charset=utf-8', 'Allow': 'GET, HEAD' });
       return res.end(JSON.stringify({ error: 'Method Not Allowed', code: 405 }));
@@ -2708,11 +3241,14 @@ function requestHandler(req, res) {
       const ext = path.extname(filePath).toLowerCase();
       const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
+      const noCacheExts = ['.html', '.css', '.js'];
       res.writeHead(200, {
         'Content-Type': contentType,
         'Content-Length': stats.size,
         'X-Content-Type-Options': 'nosniff',
-        'Cache-Control': ext === '.html' ? 'no-cache' : 'public, max-age=3600'
+        'Cache-Control': noCacheExts.includes(ext)
+          ? 'no-cache, must-revalidate'
+          : 'public, max-age=3600'
       });
 
       if (req.method === 'HEAD') {
@@ -2774,6 +3310,7 @@ module.exports = {
   requestHandler,
   resolveSafePath
 };
+
 ```
 
 ---
@@ -2809,6 +3346,10 @@ spec:
       type: string
       default: v1
       description: Semantic release tag for the container image (e.g. v1, v2)
+    - name: demo-fail-tests
+      type: string
+      default: "false"
+      description: Deliberately inject one failing test to demonstrate pipeline gating
   workspaces:
     - name: shared-workspace
       description: Persistent storage shared across all pipeline tasks
@@ -2837,6 +3378,9 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+      params:
+        - name: demo-fail-tests
+          value: $(params.demo-fail-tests)
 
     # Stage 3: In-cluster OCI build using Kaniko and push to Docker Hub
     - name: build-push
@@ -2875,6 +3419,7 @@ spec:
           value: $(tasks.fetch-source.results.commit)
         - name: namespace
           value: default
+
 ```
 
 ---
@@ -2885,7 +3430,7 @@ spec:
 **Language:** `yaml`
 
 ```yaml
-apiVersion: tekton.dev/v1
+﻿apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
   generateName: release-console-run-
@@ -2907,10 +3452,8 @@ spec:
       value: "ba1aj1"
     - name: image-tag
       value: "v1"
-    - name: app-version
-      value: "v1"
-    - name: git-commit
-      value: "a15b0f890494498aa4d36451c6d437fe3bee6b17"
+    - name: demo-fail-tests
+      value: "false"
   workspaces:
     - name: shared-workspace
       persistentVolumeClaim:
@@ -2918,6 +3461,11 @@ spec:
     - name: docker-credentials
       secret:
         secretName: dockerhub-auth
+
+
+
+
+
 ```
 
 ---
@@ -2943,6 +3491,7 @@ spec:
     requests:
       storage: 500Mi
   storageClassName: standard
+
 ```
 
 ---
@@ -2973,6 +3522,9 @@ rules:
   - apiGroups: ["apps"]
     resources: ["deployments", "deployments/status"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["apps"]
+    resources: ["replicasets", "replicasets/status"]
+    verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources: ["services", "pods", "pods/log", "pods/status"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
@@ -2992,6 +3544,7 @@ roleRef:
   kind: Role
   name: release-console-deployer-role
   apiGroup: rbac.authorization.k8s.io
+
 ```
 
 ---
@@ -3074,12 +3627,19 @@ spec:
       type: string
       default: release-console
       description: Subdirectory in workspace containing the project
+    - name: demo-fail-tests
+      type: string
+      default: "false"
+      description: Enable a deliberate failing test for the failure-gate demonstration only
   workspaces:
     - name: source
       description: Shared PersistentVolume workspace
   steps:
     - name: run-unit-tests
       image: node:20-alpine
+      env:
+        - name: DEMO_FORCE_TEST_FAILURE
+          value: "$(params.demo-fail-tests)"
       script: |
         #!/bin/sh
         set -eu
@@ -3192,6 +3752,17 @@ spec:
 
         cd "${K8S_DIR}"
 
+        # Record whether a prior release exists before changing the Deployment.
+        PREVIOUS_DEPLOYMENT="false"
+        PREVIOUS_IMAGE=""
+        if kubectl get deployment release-console -n "$(params.namespace)" >/dev/null 2>&1; then
+          PREVIOUS_DEPLOYMENT="true"
+          PREVIOUS_IMAGE="$(kubectl get deployment release-console -n "$(params.namespace)" -o jsonpath='{.spec.template.spec.containers[?(@.name=="release-console")].image}' 2>/dev/null || true)"
+          echo "Previous deployment detected; previous image: ${PREVIOUS_IMAGE}"
+        else
+          echo "No previous deployment exists; rollback will not be possible on a first install."
+        fi
+
         # Deterministically template deployment manifest with pipeline image & metadata
         echo "Preparing deployment manifest..."
         sed -e "s|DOCKERHUB_USERNAME/release-console:v1|$(params.image-reference)|g" \
@@ -3206,12 +3777,30 @@ spec:
         kubectl apply -f /tmp/deployment.yaml -n "$(params.namespace)"
 
         echo "Waiting for Deployment rollout to complete (timeout: 120s)..."
-        kubectl rollout status deployment/release-console -n "$(params.namespace)" --timeout=120s
-
-        echo "=========================================================="
-        echo " [Task: deploy-application] Rollout Completed Successfully"
-        echo "=========================================================="
+        if kubectl rollout status deployment/release-console -n "$(params.namespace)" --timeout=120s; then
+          echo "=========================================================="
+          echo " [Task: deploy-application] Rollout Completed Successfully"
+          echo "=========================================================="
+        else
+          echo "ERROR: Candidate rollout failed. The Task will attempt to restore the previous revision."
+          if [ "${PREVIOUS_DEPLOYMENT}" = "true" ] && [ -n "${PREVIOUS_IMAGE}" ]; then
+            if kubectl rollout undo deployment/release-console -n "$(params.namespace)"; then
+              if kubectl rollout status deployment/release-console -n "$(params.namespace)" --timeout=120s; then
+                echo "ROLLBACK VERIFIED: previous Deployment revision is available again."
+              else
+                echo "ERROR: Rollback was requested, but its rollout did not become ready."
+              fi
+            else
+              echo "ERROR: Kubernetes could not roll back to the previous Deployment revision."
+            fi
+          else
+            echo "No prior Deployment revision is available to restore."
+          fi
+          # Keep the PipelineRun failed so an unsuccessful release is never reported as green.
+          exit 1
+        fi
         kubectl get deployment,pods,services -l app=release-console -n "$(params.namespace)"
+
 ```
 
 ---
@@ -3354,10 +3943,108 @@ describe('Release Console - Server Test Suite', () => {
     assert.equal(res.headers['allow'], 'GET, HEAD');
   });
 
+  test('Release lab: test failure blocks image and deployment stages', async () => {
+    const res = await makeRequest('/api/release-lab/evaluate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scenario: 'test-failure' })
+    });
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.json.simulationOnly, true);
+    assert.equal(res.json.liveClusterChanged, false);
+    assert.equal(res.json.currentVersion, 'v1.0.0-test');
+    assert.equal(res.json.outcome, 'blocked');
+    assert.equal(res.json.priorVersionPreserved, true);
+    assert.deepEqual(res.json.stages.map((stage) => stage.status), ['failed', 'blocked', 'skipped']);
+  });
+
+  test('Release lab: healthy candidate is marked ready, not actually deployed', async () => {
+    const res = await makeRequest('/api/release-lab/evaluate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scenario: 'success' })
+    });
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.json.outcome, 'ready');
+    assert.equal(res.json.liveClusterChanged, false);
+  });
+
+  test('Release lab: unknown scenarios are rejected', async () => {
+    const res = await makeRequest('/api/release-lab/evaluate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scenario: 'delete-everything' })
+    });
+    assert.equal(res.statusCode, 400);
+  });
+
+  test('Release lab: rollout failure simulates rollback recovery', async () => {
+    const res = await makeRequest('/api/release-lab/evaluate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scenario: 'rollout-failure' })
+    });
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.json.outcome, 'recovered');
+    assert.equal(res.json.priorVersionPreserved, true);
+    assert.deepEqual(res.json.stages.map((stage) => stage.status), ['passed', 'passed', 'failed', 'restored']);
+    assert.ok(res.json.stages.every((stage) => stage.name && stage.status && stage.detail));
+  });
+
+  test('Release lab: all valid scenarios return consistent JSON structure', async () => {
+    const scenarios = ['success', 'test-failure', 'rollout-failure'];
+    for (const scenario of scenarios) {
+      const res = await makeRequest('/api/release-lab/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scenario })
+      });
+      assert.equal(res.statusCode, 200);
+      assert.ok(typeof res.json.outcome === 'string');
+      assert.ok(typeof res.json.title === 'string');
+      assert.ok(typeof res.json.summary === 'string');
+      assert.equal(res.json.currentVersion, 'v1.0.0-test');
+      assert.ok(Array.isArray(res.json.stages));
+      for (const stage of res.json.stages) {
+        assert.ok(stage.name, 'Stage must have a name');
+        assert.ok(stage.status, 'Stage must have a status');
+        assert.ok(stage.detail, 'Stage must have a detail');
+      }
+    }
+  });
+
+  test('Release lab: endpoint accepts POST only', async () => {
+    const res = await makeRequest('/api/release-lab/evaluate');
+    assert.equal(res.statusCode, 405);
+    assert.equal(res.headers.allow, 'POST');
+  });
+
+  test('Static asset cache headers: CSS and JS served with no-cache, must-revalidate', async () => {
+    const cssRes = await makeRequest('/styles.css?v=resilience-lab-2');
+    assert.equal(cssRes.statusCode, 200);
+    assert.match(cssRes.headers['content-type'], /text\/css/);
+    assert.equal(cssRes.headers['cache-control'], 'no-cache, must-revalidate');
+
+    const jsRes = await makeRequest('/app.js?v=resilience-lab-2');
+    assert.equal(jsRes.statusCode, 200);
+    assert.match(jsRes.headers['content-type'], /application\/javascript/);
+    assert.equal(jsRes.headers['cache-control'], 'no-cache, must-revalidate');
+  });
+
   // Directory traversal attack protection
   test('Security Check: Path traversal attempt (../../etc/passwd) is blocked', async () => {
     const res = await makeRequest('/../../etc/passwd');
     assert.ok([403, 404].includes(res.statusCode), 'Path traversal must be rejected with 403 or 404');
   });
+
+  // Controlled fault injection for the live CI/CD demo. Disabled by default.
+  if (process.env.DEMO_FORCE_TEST_FAILURE === 'true') {
+    test('DEMO FAULT INJECTION: candidate regression must fail the quality gate', () => {
+      assert.fail('Intentional demonstration failure: Tekton must block image build and deployment.');
+    });
+  }
 });
+
 ```
+
+---
